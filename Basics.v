@@ -261,3 +261,31 @@ Example test_factorial1: (factorial 3) = 6.
 Proof. simpl. reflexivity. Qed.
 Example test_factorial2: (factorial 5) = (mult 10 12).
 Proof. simpl. reflexivity. Qed.
+
+Theorem plus_0_n: forall n:nat, nat_add 0 n = n.
+Proof. intros n. simpl. reflexivity. Qed.
+
+Check 2 > 0.
+Theorem mul_0_n : forall n:nat, (mult 0 n) = 0.
+Proof. intros n. reflexivity. Qed.
+
+Theorem plus_same_mn : forall m n:nat, m = n -> m + m = n + n.
+Proof. intros m n. intros H. rewrite <- H. reflexivity. Qed.
+
+Theorem plus_id_exercise : forall n m o : nat,
+  n = m -> m = o -> n + m = m + o.
+Proof.
+  intros n m o.
+  intros H.
+  rewrite -> H.
+  intros L.
+  rewrite -> L.
+  reflexivity.
+Qed.
+
+Theorem mul_1_n :
+  forall n:nat, (mult 1 n) = n.
+Proof.
+  intros n.
+  reflexivity.
+Qed.

@@ -894,6 +894,22 @@ Fixpoint bin_to_nat (m:bin) : nat := match m with
 | A b' => plus 1 (mult 2 (bin_to_nat b'))
 end.
 
+(*
+Theorem incr_and_bin_to_nat_is_right:
+  forall n:bin, bin_to_nat (incr n) = S (bin_to_nat n).
+Proof.
+  intros n.
+  induction n as [|n'].
+  Case "n = Z".
+    simpl. (* bin_to_nat *)
+    reflexivity.
+  Case "n = B b'".
+    reflexivity.
+  Case "n = A b'".
+    reflexivity.
+Qed.
+*)
+
 (* FILL IN HERE *)
 
 (* Do not modify the following line: *)

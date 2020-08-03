@@ -100,16 +100,14 @@ From LF Require Export Basics.
 
 Theorem plus_n_O_firsttry : forall n:nat,
   n = n + 0.
-
-(** ... can't be done in the same simple way.  Just applying
-  [reflexivity] doesn't work, since the [n] in [n + 0] is an arbitrary
-  unknown number, so the [match] in the definition of [+] can't be
-  simplified.  *)
-
 Proof.
   intros n.
-  simpl. (* Does nothing! *)
-Abort.
+  induction n as [|n'].
+  - reflexivity.
+  - simpl. (* S n' = S n' + 0 => S n' = S (plus n' 0) *)
+    rewrite <- IHn'.
+    reflexivity.
+Qed.
 
 (** And reasoning by cases using [destruct n] doesn't get us much
     further: the branch of the case analysis where we assume [n = 0]

@@ -890,25 +890,98 @@ end.
 
 Fixpoint bin_to_nat (m:bin) : nat := match m with
 | Z => O
-| B b' => mult 2 (bin_to_nat b')
-| A b' => plus 1 (mult 2 (bin_to_nat b'))
+| B b' => plus 1 (mult 2 (bin_to_nat b'))
+| A b' => mult 2 (bin_to_nat b')
 end.
 
-(*
+Example incr_1: incr Z = B Z.
+Proof. reflexivity. Qed.
+Example incr_2: incr (B Z) = A (B Z).
+Proof. reflexivity. Qed.
+Example incr_3: incr (A (B Z)) = B (B Z).
+Proof. reflexivity. Qed.
+Example incr_4: incr (B (B Z)) = A (A (B Z)).
+Proof. reflexivity. Qed.
+Example bin_to_nat_1: bin_to_nat Z = O.
+Proof. reflexivity. Qed.
+Example bin_to_nat_2: bin_to_nat (B Z) = S O.
+Proof. reflexivity. Qed.
+Example bin_to_nat_3: bin_to_nat (A (B Z)) = S (S O).
+Proof. reflexivity. Qed.
+Example bin_to_nat_4: bin_to_nat (B (B Z)) = S (S (S O)).
+Proof. reflexivity. Qed.
+
+Lemma incr_B_b: forall b:bin, incr (B b) = A (incr b).
+Proof. destruct b. reflexivity. reflexivity. reflexivity. Qed.
+Lemma bin_to_nat_A_b: forall b:bin, bin_to_nat (A b) = mult 2 (bin_to_nat b).
+Proof. destruct b. reflexivity. reflexivity. reflexivity. Qed.
+Lemma bin_to_nat_B_b: forall b:bin, bin_to_nat (B b) = plus 1 (mult 2 (bin_to_nat b)).
+Proof. destruct b. reflexivity. reflexivity. reflexivity. Qed.
+
+Lemma mult_S_n':
+  forall n m:nat, mult (S n) m = plus m (mult n m).
+Proof.
+  destruct n.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+Theorem mult_2_eq_n_plus_n:
+  forall n:nat, mult 2 n = n + n.
+Proof.
+  intros n.
+  rewrite -> mult_S_n'.
+  rewrite -> mult_S_n'.
+  rewrite -> mult_0_l.
+  rewrite -> plus_n_0_eq_n.
+  reflexivity.
+Qed.
+
+Theorem plus_is_commutative:
+  forall a b:nat, a + b = b + a.
+Proof.
+  (* a' + b = b + a' *)
+  (* S a' + b = b + S a' *)
+  reflexivity.
+Qed.
+
+(* mult 2 (S (bin_to_nat b')) = S (plus 1 (mult 2 (bin_to_nat b'))) *)
+Theorem mult_shit:
+  forall n:nat, mult 2 (S n) = S (1 + 2 * n).
+Proof.
+  (* mult 2 (S n) = S (1 + 2 * n). *)
+  (* plus (S n) (S n) = S (plus 1 (plus n n)) *)
+  (* plus (S n) (S n) = S ( S (plus n n)) *)
+  (* S (plus n (S n)) = S ( S (plus n n)) *)
+  (* S (plus (S n) n) = S ( S (plus n n)) *)
+  (* S (S (plus n n)) = S ( S (plus n n)) *)
+Qed.
+
 Theorem incr_and_bin_to_nat_is_right:
   forall n:bin, bin_to_nat (incr n) = S (bin_to_nat n).
 Proof.
   intros n.
-  induction n as [|n'].
-  Case "n = Z".
-    simpl. (* bin_to_nat *)
+  induction n as [|b'|b'].
+  - simpl. (* bin_to_nat *)
     reflexivity.
-  Case "n = B b'".
+  - (* IHb': bin_to_nat (incr b') = S (bin_to_nat b') *)
+    (* ---------------------------------------------- *)
+    (* bin_to_nat (incr (A b')) = S (bin_to_nat (A b')) *)
+    simpl.
     reflexivity.
-  Case "n = A b'".
+  - (* IHb': bin_to_nat (incr b') = S (bin_to_nat b') *)
+    (* ---------------------------------------------- *)
+    (* bin_to_nat (incr (B b')) = S (bin_to_nat (B b')) *)
+    rewrite -> incr_B_b.
+    (* bin_to_nat (A (incr b')) = S (bin_to_nat (B b')) *)
+    rewrite -> bin_to_nat_A_b.
+    (* mult 2 (bin_to_nat (incr b')) = S (bin_to_nat (B b')) *)
+    rewrite -> IHb'.
+    (* mult 2 (S (bin_to_nat b')) = S (bin_to_nat (B b')) *)
+    rewrite -> bin_to_nat_B_b.
+    (* mult 2 (S (bin_to_nat b')) = S (plus 1 (mult 2 (bin_to_nat b'))) *)
     reflexivity.
 Qed.
-*)
 
 (* FILL IN HERE *)
 

@@ -195,22 +195,84 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n'].
+  - reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': n' * 0 = 0 *)
+    (* S n' * 0 = 0 *)
+    simpl.
+    rewrite -> IHn'.
+    reflexivity.
+Qed.
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n'].
+  - (* Case n = O *)
+    (* S (O + m) = O + (S m) *)
+    reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': forall m, S (n' + m) = n' + (S m) *)
+    induction m as [|m'].
+    + (* Case m = O *)
+      (* S (S n' + O) = S n' + (S O) *)
+      simpl.
+      (* S S (n' + 0) = S (n' + 1) *)
+      rewrite -> (IHn' O).
+      reflexivity.
+    + (* Case m = S m' *)
+      (* IHm': S (S n' + m') = S n' + (S m') *)
+      simpl.
+      (* S (S (n' + S m')) = S (n' + S (S m')) *)
+      rewrite -> (IHn' (S m')).
+      (* S (n' + S S m')) = S (n' + S (S m')) *)
+      reflexivity.
+Qed.
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n' IHn'].
+  - (* Case n = O *)
+    (* O + m = m + O *)
+    intros m.
+    rewrite <- (plus_n_O_firsttry m).
+    reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': forall m, n' + m = m + n' *)
+    induction m as [|m' IHm'].
+    + (* Case m = O *)
+      (* S n' + O = O + S n' *)
+      rewrite <- (plus_n_O_firsttry (S n')).
+      reflexivity.
+    + (* Case m = S m' *)
+      (* IHm': S n' + m' = m' + S n' *)
+      (* S n' + S m' = S m' + S n' *)
+      simpl.
+      (* S (n' + S m') = S (m' + S n') *)
+      rewrite -> (IHn' (S m')).
+      (* S (S m' + n') = S (m' + S n') *)
+      rewrite <- IHm'.
+      simpl.
+      rewrite -> (IHn' m').
+      reflexivity.
+Qed.
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  induction n as [|n' IHn'].
+  - reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': forall m p, n' + (m + p) = (n' + m) + p *)
+    (* S n' + (m + p) = (S n' + m) + p *)
+    simpl.
+    (* S (n' + (m + p)) = S (n' + m + p) *)
+    rewrite -> IHn'.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (double_plus)  
@@ -227,7 +289,17 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n'].
+  - reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': double n' = n' + n' *)
+    simpl.
+    (* S (S (double n'))  *)
+    rewrite -> (plus_comm n' (S n')).
+    simpl.
+    rewrite -> IHn'.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (evenb_S)  
@@ -242,7 +314,18 @@ Proof.
 Theorem evenb_S : forall n : nat,
   evenb (S n) = negb (evenb n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n' IHn'].
+  - reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': evenb (S n') = negb (evenb n') *)
+    (* evenb (S S n') = negb (evenb S n') *)
+    rewrite -> IHn'.
+    (* evenb (S S n') = negb (negb evenb n') *)
+    simpl.
+    (* evenb n' = negb (negb evenb n') *)
+    rewrite -> negb_involutive.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (destruct_induction)  
@@ -483,7 +566,12 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  rewrite -> (plus_assoc m n p). (* (m + n) + p *)
+  rewrite -> (plus_assoc n m p). (* (n + m) + p *)
+  rewrite -> (plus_comm m n).
+  reflexivity.
+Qed.
 
 (** Now prove commutativity of multiplication.  (You will probably
     need to define and prove a separate subsidiary theorem to be used
@@ -493,8 +581,33 @@ Proof.
 Theorem mult_comm : forall m n : nat,
   m * n = n * m.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  induction m as [|m' IHm'].
+  - simpl.
+    intros n.
+    rewrite -> mult_0_r.
+    reflexivity.
+  - (* Case m = S m' *)
+    (* IHm': forall n, m' * n = n * m' *)
+    induction n as [|n' IHn'].
+    + simpl.
+      rewrite -> mult_0_r.
+      reflexivity.
+    + (* Case n = S n' *)
+      (* IHn': S m' * n' = n' * S m' *)
+      (* S n' + m' * S n' = S n' * S m' *)
+      simpl.
+      (* S (n' + m' * S n') = S (m' + n' * S m') *)
+      rewrite -> IHm'.
+      (* S (n' + S n' * m') = S (m' + n' * S m') *)
+      rewrite <- IHn'.
+      (* S (n' + S n' * m') = S (m' + S m' * n') *)
+      simpl.
+      rewrite -> plus_assoc.
+      rewrite -> plus_assoc.
+      rewrite -> (plus_comm m' n').
+      rewrite -> (IHm' n').
+      reflexivity.
+Qed.
 
 (** **** Exercise: 3 stars, standard, optional (more_exercises)  
 

@@ -149,7 +149,6 @@ Example test_factorial2:          (factorial 5) = (mult 10 12).
 Proof. reflexivity. Qed.
 (** [] *)
 
-(*
 Notation "x + y" := (plus x y)
                        (at level 50, left associativity)
                        : nat_scope.
@@ -161,7 +160,6 @@ Notation "x * y" := (mult x y)
                        : nat_scope.
 
 Check ((0 + 1) + 1).
-*)
 
 Fixpoint eqb (n m : nat) : bool :=
   match n with
@@ -980,55 +978,6 @@ Proof.
 Qed.
 
 (* mult 2 (S (bin_to_nat b')) = S (plus 1 (mult 2 (bin_to_nat b'))) *)
-Theorem mult_shit:
-  forall n:nat, mult 2 (S n) = S (1 + 2 * n).
-Proof.
-  induction n as [|n'].
-  - reflexivity.
-  - (* Case n = S n' *)
-    (* IHn': mult 2 (S n') = S (1 + 2 * n') *)
-    (* mult 2 (S n) = S (1 + 2 * n). *)
-    simpl.
-    (* S (S (plus n' (S (S (plus n' 0))))) = 
-    *  S (S (S (n' + S (n' + 0)))) *)
-    rewrite <- (plus_is_commutative (S (n' + 0)) n').
-    rewrite <- (plus_is_commutative 0 n').
-    simpl.
-    rewrite <- (plus_is_commutative 0 n').
-    simpl.
-    reflexivity.
-    (* plus (S n) (S n) = S ( S (plus n n)) *)
-    (* S (plus n (S n)) = S ( S (plus n n)) *)
-    (* S (plus (S n) n) = S ( S (plus n n)) *)
-    (* S (S (plus n n)) = S ( S (plus n n)) *)
-Qed.
-
-Theorem incr_and_bin_to_nat_is_right:
-  forall n:bin, bin_to_nat (incr n) = S (bin_to_nat n).
-Proof.
-  intros n.
-  induction n as [|b'|b'].
-  - simpl. (* bin_to_nat *)
-    reflexivity.
-  - (* IHb': bin_to_nat (incr b') = S (bin_to_nat b') *)
-    (* ---------------------------------------------- *)
-    (* bin_to_nat (incr (A b')) = S (bin_to_nat (A b')) *)
-    simpl.
-    reflexivity.
-  - (* IHb': bin_to_nat (incr b') = S (bin_to_nat b') *)
-    (* ---------------------------------------------- *)
-    (* bin_to_nat (incr (B b')) = S (bin_to_nat (B b')) *)
-    rewrite -> incr_B_b.
-    (* bin_to_nat (A (incr b')) = S (bin_to_nat (B b')) *)
-    rewrite -> bin_to_nat_A_b.
-    (* mult 2 (bin_to_nat (incr b')) = S (bin_to_nat (B b')) *)
-    rewrite -> IHb'.
-    (* mult 2 (S (bin_to_nat b')) = S (bin_to_nat (B b')) *)
-    rewrite -> bin_to_nat_B_b.
-    (* mult 2 (S (bin_to_nat b')) = S (plus 1 (mult 2 (bin_to_nat b'))) *)
-    reflexivity.
-Qed.
-
 (* FILL IN HERE *)
 
 (* Do not modify the following line: *)

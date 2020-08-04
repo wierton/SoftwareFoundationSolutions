@@ -93,7 +93,7 @@ Theorem mult_2_eq_n_plus_n:
 Proof.
   intros n.
   assert(mult_S_n': forall n m:nat, mult (S n) m = plus m (mult n m)).
-  { destruct n. reflexivity. reflexivity. }
+  { reflexivity. }
   rewrite -> mult_S_n'.
   rewrite -> mult_S_n'.
   rewrite -> mult_0_l.
@@ -179,17 +179,17 @@ Proof.
     (* ---------------------------------------------- *)
     (* bin_to_nat (incr (B b')) = S (bin_to_nat (B b')) *)
     assert (incr_B_b:forall b:bin, incr (B b) = A (incr b)).
-    { destruct b. reflexivity. reflexivity. reflexivity. }
+    { reflexivity. }
     rewrite -> incr_B_b.
     (* bin_to_nat (A (incr b')) = S (bin_to_nat (B b')) *)
     assert (bin_to_nat_A_b: forall b:bin, bin_to_nat (A b) = mult 2 (bin_to_nat b)).
-    { destruct b. reflexivity. reflexivity. reflexivity. }
+    { reflexivity. }
     rewrite -> bin_to_nat_A_b.
     (* mult 2 (bin_to_nat (incr b')) = S (bin_to_nat (B b')) *)
     rewrite -> IHb'.
     (* mult 2 (S (bin_to_nat b')) = S (bin_to_nat (B b')) *)
     assert (bin_to_nat_B_b: forall b:bin, bin_to_nat (B b) = plus 1 (mult 2 (bin_to_nat b))).
-    { destruct b. reflexivity. reflexivity. reflexivity. }
+    { reflexivity. }
     rewrite -> bin_to_nat_B_b.
     (* 2 * (S (bin_to_nat b')) = S (1 + (2 * (bin_to_nat b'))) *)
     rewrite <- (mult_shit (bin_to_nat b')).

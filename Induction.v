@@ -390,6 +390,23 @@ Proof.
     and it turns out that doing [rewrite -> plus_comm] will affect
     only the _outer_ one... *)
 
+Theorem plus_rearrange_mine_1 : forall n m p q : nat,
+  (n + m) + (p + q) = (m + n) + (p + q).
+Proof.
+  intros n m p q.
+  rewrite -> (plus_comm n m).
+  reflexivity.
+Qed.
+
+Theorem plus_rearrange_mine_2 : forall n m p q : nat,
+  (n + m) + (p + q) = (m + n) + (p + q).
+Proof.
+  intros n m p q.
+  assert (H: m + n = n + m). { rewrite -> plus_comm. reflexivity. }
+  rewrite -> H.
+  reflexivity.
+Qed.
+
 Theorem plus_rearrange_firsttry : forall n m p q : nat,
   (n + m) + (p + q) = (m + n) + (p + q).
 Proof.

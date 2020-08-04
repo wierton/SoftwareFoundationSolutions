@@ -942,19 +942,65 @@ Theorem plus_is_commutative:
 Proof.
   (* a' + b = b + a' *)
   (* S a' + b = b + S a' *)
-  reflexivity.
+  induction a as [|a'].
+  - (* Case a = O *)
+    induction b as [|b'].
+    + (* Case b = O *)
+      reflexivity.
+    + (* Case b = S b' *)
+      (* IHb':  Z + b' = b' + Z *)
+      (* INIT: Z + S b' = S b' + Z *)
+      simpl.
+      (*     : S b' = S (b + Z) *)
+      rewrite <- IHb'.
+      reflexivity.
+  - (* Case a = S a' *)
+    induction b as [|b'].
+    + (* Case b = O *)
+      (* IHa': a' + O = O + a' *)
+      (* S a' + O = O + S a' *)
+      simpl.
+      (* S (a' + O) = S a' *)
+      rewrite -> IHa'.
+      reflexivity.
+    + (* Case b = S b' *)
+      (* IHa': forall b, a' + b = b + a' *)
+      (* IHb': S a' + b' = b' + S a' *)
+      (* init: S a' + S b' = S b' + S a' *)
+      simpl.
+      (*     : S (a' + S b') = S (b' + S a') *)
+      rewrite -> IHa'.
+      (*     : S (S b' + a') = S (b' + S a') *)
+      simpl.
+      (*     : S (S (b' + a')) = S (b' + S a') *)
+      rewrite <- (IHa' b').
+      (*     : S (S (a' + b')) = S (b' + S a') *)
+      rewrite <- IHb'.
+      reflexivity.
 Qed.
 
 (* mult 2 (S (bin_to_nat b')) = S (plus 1 (mult 2 (bin_to_nat b'))) *)
 Theorem mult_shit:
   forall n:nat, mult 2 (S n) = S (1 + 2 * n).
 Proof.
-  (* mult 2 (S n) = S (1 + 2 * n). *)
-  (* plus (S n) (S n) = S (plus 1 (plus n n)) *)
-  (* plus (S n) (S n) = S ( S (plus n n)) *)
-  (* S (plus n (S n)) = S ( S (plus n n)) *)
-  (* S (plus (S n) n) = S ( S (plus n n)) *)
-  (* S (S (plus n n)) = S ( S (plus n n)) *)
+  induction n as [|n'].
+  - reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': mult 2 (S n') = S (1 + 2 * n') *)
+    (* mult 2 (S n) = S (1 + 2 * n). *)
+    simpl.
+    (* S (S (plus n' (S (S (plus n' 0))))) = 
+    *  S (S (S (n' + S (n' + 0)))) *)
+    rewrite <- (plus_is_commutative (S (n' + 0)) n').
+    rewrite <- (plus_is_commutative 0 n').
+    simpl.
+    rewrite <- (plus_is_commutative 0 n').
+    simpl.
+    reflexivity.
+    (* plus (S n) (S n) = S ( S (plus n n)) *)
+    (* S (plus n (S n)) = S ( S (plus n n)) *)
+    (* S (plus (S n) n) = S ( S (plus n n)) *)
+    (* S (S (plus n n)) = S ( S (plus n n)) *)
 Qed.
 
 Theorem incr_and_bin_to_nat_is_right:

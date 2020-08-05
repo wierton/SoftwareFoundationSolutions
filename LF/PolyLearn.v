@@ -2,9 +2,9 @@ Set Warnings "-notation-overridden,-parsing".
 From LF Require Export Lists.
 
 Module ListWorkbench.
-Inductive list(X:Type):Type :=
+Inductive list(T:Type):Type :=
 | nil
-| cons (e:X) (l:list X)
+| cons (e:T) (l:list T)
 .
 
 Inductive boollist:Type :=
@@ -40,5 +40,26 @@ Proof. reflexivity. Qed.
 Example test_repeat2 :
   repeat bool false 1 = cons bool false (nil bool).
 Proof. reflexivity. Qed.
+
+Arguments nil {T}.
+Arguments cons {T} _ _.
+Arguments repeat {T} _ _.
+
+Compute repeat true 3.
+
+Fixpoint repeat'{T:Type} (x:T) (count:nat): list T :=
+  match count with
+  | 0 => nil
+  | S n' => cons x (repeat x n')
+  end.
+
+Compute repeat' true 3.
+
+Check @nil.
+Check nil.
+Definition mytest(l:list nat):list nat := @nil nat.
+
+Arguments list {T}.
+Definition mytest'(l:@list nat):@list nat := @nil nat.
 
 End ListWorkbench.

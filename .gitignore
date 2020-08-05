@@ -1,0 +1,13 @@
+*.conf
+*.glob
+Makefile
+*.vo
+*.vok
+*.vos
+*.out
+*.output
+*.o
+*.aux
+*.d
+.*
+!.gitignore

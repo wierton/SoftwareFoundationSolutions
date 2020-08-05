@@ -1058,7 +1058,19 @@ Qed.
 
     (There is a hard way and an easy way to do this.) *)
 
-(* FILL IN HERE *)
+Theorem rev_injective:
+  forall l1 l2:natlist, (rev l1 = rev l2) -> l1 = l2.
+Proof.
+  intros l1 l2 H.
+  replace l1 with (rev (rev l1)).
+  replace l2 with (rev (rev l2)).
+  rewrite H.
+  reflexivity.
+  - rewrite -> rev_involutive.
+    reflexivity.
+  - rewrite -> rev_involutive.
+    reflexivity.
+Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_rev_injective : option (nat*string) := None.
@@ -1149,17 +1161,20 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
     Using the same idea, fix the [hd] function from earlier so we don't
     have to pass a default element for the [nil] case.  *)
 
-Definition hd_error (l : natlist) : natoption
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition hd_error (l : natlist) : natoption :=
+  match l with
+  | nil => None
+  | cons e l' => Some e
+  end.
 
 Example test_hd_error1 : hd_error [] = None.
- (* FILL IN HERE *) Admitted.
+Proof. trivial. Qed.
 
 Example test_hd_error2 : hd_error [1] = Some 1.
- (* FILL IN HERE *) Admitted.
+Proof. trivial. Qed.
 
 Example test_hd_error3 : hd_error [5;6] = Some 5.
- (* FILL IN HERE *) Admitted.
+Proof. trivial. Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard, optional (option_elim_hd)  
@@ -1169,7 +1184,10 @@ Example test_hd_error3 : hd_error [5;6] = Some 5.
 Theorem option_elim_hd : forall (l:natlist) (default:nat),
   hd default l = option_elim default (hd_error l).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l as [|e l' IHl'].
+  - trivial.
+  - trivial.
+Qed.
 (** [] *)
 
 End NatList.
@@ -1203,7 +1221,12 @@ Definition eqb_id (x1 x2 : id) :=
 (** **** Exercise: 1 star, standard (eqb_id_refl)  *)
 Theorem eqb_id_refl : forall x, true = eqb_id x x.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros x.
+  destruct x as [n].
+  - simpl.
+    rewrite -> (eqb_refl n).
+    reflexivity.
+Qed.
 (** [] *)
 
 (** Now we define the type of partial maps: *)
@@ -1249,7 +1272,11 @@ Theorem update_eq :
   forall (d : partial_map) (x : id) (v: nat),
     find x (update d x v) = Some v.
 Proof.
- (* FILL IN HERE *) Admitted.
+  intros d x v.
+  simpl.
+  rewrite <- (eqb_id_refl x).
+  reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (update_neq)  *)
@@ -1257,7 +1284,11 @@ Theorem update_neq :
   forall (d : partial_map) (x y : id) (o: nat),
     eqb_id x y = false -> find x (update d y o) = find x d.
 Proof.
- (* FILL IN HERE *) Admitted.
+  intros.
+  simpl.
+  rewrite -> H.
+  reflexivity.
+Qed.
 (** [] *)
 End PartialMap.
 

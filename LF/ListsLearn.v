@@ -107,4 +107,44 @@ Proof.
     reflexivity.
 Qed.
 
+Fixpoint rev(l:natlist):natlist :=
+  match l with
+  | nil => nil
+  | cons e l => app (rev l) (cons e nil)
+  end.
+
+Example test_rev1: rev [1;2;3] = [3;2;1].
+Proof. reflexivity. Qed.
+Example test_rev2: rev nil = nil.
+Proof. reflexivity. Qed.
+
+Theorem app_length:
+  forall l1 l2:natlist, length l1 + length l2 = length (l1 ++ l2).
+Proof.
+  induction l1 as [|e l1' IHl1'].
+  - reflexivity.
+  - simpl.
+    intros l2.
+    rewrite <- IHl1'.
+    reflexivity.
+Qed.
+
+Theorem rev_length_firsttry:
+  forall l:natlist, length (rev l) = length l.
+Proof.
+  induction l as [|e l' IHl'].
+  - reflexivity.
+  - (* Case l = cons e l' *)
+    (* IHl': length (rev l') = length l' *)
+    (* length (rev (cons e l')) = length (cons e l') *)
+    simpl.
+    (* length (rev l' ++ [e]) = S (length l') *)
+    rewrite <- app_length.
+    rewrite <- plus_comm.
+    rewrite -> IHl'.
+    reflexivity.
+Qed.
+
+Search rev.
+
 End NatList.

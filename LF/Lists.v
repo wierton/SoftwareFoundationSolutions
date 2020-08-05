@@ -1,5 +1,6 @@
 (** * Lists: Working with Structured Data *)
 
+Require Import Le Lt Gt Decidable PeanoNat.
 From LF Require Export Induction.
 Module NatList.
 
@@ -860,17 +861,36 @@ Proof.
 Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l as [|e l' IHl'].
+  - reflexivity.
+  - simpl.
+    rewrite -> IHl'.
+    reflexivity.
+Qed.
 
 Theorem rev_app_distr: forall l1 l2 : natlist,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l1 as [|e1 l1' IHl1'].
+  - simpl.
+    intros l2.
+    rewrite -> app_nil_r.
+    reflexivity.
+  - simpl.
+    intros l2.
+    rewrite -> IHl1', app_assoc.
+    reflexivity.
+Qed.
 
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l as [|e l' IHl'].
+  - reflexivity.
+  - simpl.
+    rewrite -> rev_app_distr, IHl'.
+    reflexivity.
+Qed.
 
 (** There is a short solution to the next one.  If you find yourself
     getting tangled up, step back and try to look for a simpler
@@ -879,14 +899,27 @@ Proof.
 Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l1 l2 l3 l4.
+  rewrite -> app_assoc, app_assoc.
+  reflexivity.
+Qed.
 
 (** An exercise about your implementation of [nonzeros]: *)
 
+Check nonzeros.
 Lemma nonzeros_app : forall l1 l2 : natlist,
   nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l1 as [|e1 l1' IHl1'].
+  - reflexivity.
+  - simpl.
+    intros l2.
+    destruct e1.
+    + rewrite -> IHl1'.
+      reflexivity.
+    + rewrite -> IHl1'.
+      reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (eqblist)  
@@ -895,26 +928,61 @@ Proof.
     lists of numbers for equality.  Prove that [eqblist l l]
     yields [true] for every list [l]. *)
 
-Fixpoint eqblist (l1 l2 : natlist) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint eqblist (l1 l2 : natlist) : bool :=
+  match l1 with
+  | nil =>
+      match l2 with
+      | nil => true
+      | cons e l => false
+      end
+  | cons e l =>
+      match l2 with
+      | nil => false
+      | cons e' l' =>
+          match (e =? e') with
+          | true => eqblist l l'
+          | false => false
+          end
+      end
+  end.
+
 
 Example test_eqblist1 :
   (eqblist nil nil = true).
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_eqblist2 :
   eqblist [1;2;3] [1;2;3] = true.
-(* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_eqblist3 :
   eqblist [1;2;3] [1;2;4] = false.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
+
+Theorem nat_eq_self:
+  forall n:nat, (n =? n) = true.
+Proof.
+  induction n as [|n' IHn'].
+  - reflexivity.
+  - simpl.
+    rewrite -> IHn'.
+    reflexivity.
+Qed.
 
 Theorem eqblist_refl : forall l:natlist,
   true = eqblist l l.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  induction l as [|e l' IHl'].
+  - reflexivity.
+  - simpl.
+    rewrite <- IHl'.
+    assert (H: forall n:nat, (n =? n) = true).
+    { induction n as [|n' IHn'].
+      - reflexivity.
+      - simpl. rewrite -> IHn'. reflexivity. }
+    rewrite -> H.
+    reflexivity.
+Qed.
 
 (* ================================================================= *)
 (** ** List Exercises, Part 2 *)
@@ -926,7 +994,9 @@ Proof.
 Theorem count_member_nonzero : forall (s : bag),
   1 <=? (count 1 (1 :: s)) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 (** [] *)
 
 (** The following lemma about [leb] might help you in the next exercise. *)
@@ -946,7 +1016,17 @@ Proof.
 Theorem remove_does_not_increase_count: forall (s : bag),
   (count 0 (remove_one 0 s)) <=? (count 0 s) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction s as [|e l' IHl'].
+  - reflexivity.
+  - simpl.
+    destruct e.
+    + simpl.
+      rewrite -> leb_n_Sn.
+      reflexivity.
+    + simpl.
+      rewrite -> IHl'.
+      reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard, optional (bag_count_sum)  
@@ -955,9 +1035,20 @@ Proof.
     involving the functions [count] and [sum], and prove it using
     Coq.  (You may find that the difficulty of the proof depends on
     how you defined [count]!) *)
-(* FILL IN HERE 
-
-    [] *)
+Theorem count_and_sum:
+  forall (n:nat) (l1 l2:bag),
+    count n (sum l1 l2) = (count n l1) + (count n l2).
+Proof.
+  induction l1 as [|e1 l1' IHl1'].
+  - simpl.
+    reflexivity.
+  - simpl.
+    intros l2.
+    rewrite -> IHl1'.
+    destruct (n =? e1).
+    + reflexivity.
+    + reflexivity.
+Qed.
 
 (** **** Exercise: 4 stars, advanced (rev_injective)  
 

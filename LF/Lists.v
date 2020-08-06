@@ -1058,6 +1058,23 @@ Qed.
 
     (There is a hard way and an easy way to do this.) *)
 
+Theorem rev_injective':
+  forall l1 l2:natlist, (rev l1 = rev l2) -> l1 = l2.
+Proof.
+  assert (H1: forall l1 l2:natlist, l1 = l2 -> (rev l1 = rev l2)).
+  { intros l1 l2 H1'. rewrite -> H1'. reflexivity. }
+  assert (H2: forall l1 l2:natlist, rev (rev l1) = rev (rev l2) -> l1 = l2).
+  { intros l1 l2 H2'.
+    rewrite -> rev_involutive in H2'.
+    rewrite -> rev_involutive in H2'.
+    rewrite -> H2'.
+    reflexivity. }
+  intros l1 l2 rev_eq_H.
+  apply H1 in rev_eq_H as rev_rev_eq_H.
+  apply H2 in rev_rev_eq_H as eq_H.
+  apply eq_H.
+Qed.
+
 Theorem rev_injective:
   forall l1 l2:natlist, (rev l1 = rev l2) -> l1 = l2.
 Proof.

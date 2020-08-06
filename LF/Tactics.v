@@ -110,7 +110,11 @@ Theorem rev_exercise1 : forall (l l' : list nat),
      l = rev l' ->
      l' = rev l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l l' H.
+  rewrite -> H.
+  rewrite rev_involutive.
+  reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard, optional (apply_rewrite)  
@@ -128,6 +132,16 @@ Proof.
 
 (** The following silly example uses two rewrites in a row to
     get from [[a;b]] to [[e;f]]. *)
+
+Example trans_eq_example_mine : forall (a b c d e f : nat),
+     [a;b] = [c;d] ->
+     [c;d] = [e;f] ->
+     [a;b] = [e;f].
+Proof.
+  intros a b c d e f eq1 eq2.
+  rewrite -> eq2 in eq1.
+  exact eq1.
+Qed.
 
 Example trans_eq_example : forall (a b c d e f : nat),
      [a;b] = [c;d] ->
@@ -150,6 +164,36 @@ Proof.
 (** Now, we should be able to use [trans_eq] to prove the above
     example.  However, to do this we need a slight refinement of the
     [apply] tactic. *)
+Lemma xxxx:
+  forall (X:Type) (a b:X), a = b -> b = a.
+Proof.
+  intros.
+  symmetry.
+  apply H.
+Qed.
+
+Theorem trans_eq_plus :
+  forall (a b c d : nat),
+  a = b -> b = c -> c = d -> a = d.
+Proof.
+  intros.
+  rewrite H.
+  rewrite H0.
+  rewrite H1.
+  reflexivity.
+Qed.
+
+Theorem trans_eq_plus_ex:
+  forall (a b c d : nat),
+  a = b -> b = c -> c = d -> a = d.
+Proof.
+  intros aa bb cc dd.
+  intros.
+  apply trans_eq_plus with (b:=bb) (c:=cc).
+  - rewrite H. reflexivity.
+  - rewrite H0. reflexivity.
+  - rewrite H1. reflexivity.
+Qed.
 
 Example trans_eq_example' : forall (a b c d e f : nat),
      [a;b] = [c;d] ->
@@ -179,7 +223,11 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o p H1 H2.
+  apply trans_eq with (m:=m).
+  - exact H2.
+  - exact H1.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -244,7 +292,7 @@ Proof.
     premise to the goal. In the present example, adds the premise
     [n = m]. *)
 
-  injection H. intros Hnm. apply Hnm.
+  injection H.  intros H3.  apply H3.
 Qed.
 
 (** Here's a more interesting example that shows how [injection] can
@@ -276,7 +324,13 @@ Example injection_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   y :: l = x :: j ->
   x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  injection H.
+  injection H0.
+  intros H1 H2 H3 H4.
+  symmetry.
+  apply H2.
+Qed.
 (** [] *)
 
 (** So much for injectivity of constructors.  What about disjointness?

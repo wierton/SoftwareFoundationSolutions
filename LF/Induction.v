@@ -830,7 +830,7 @@ Fixpoint nat_to_bin (n:nat) : bin
 
 Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
 Proof.
-Qed.
+Admitted.
 
 Fixpoint incr (m:bin) : bin := match m with
 | Z => B Z

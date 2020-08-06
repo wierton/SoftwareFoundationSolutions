@@ -63,7 +63,7 @@ Theorem silly2a : forall (n m : nat),
      [n] = [m].
 Proof.
   intros n m eq1 eq2.
-  apply eq2. apply eq1.  Qed.
+  apply eq2 in eq1. apply eq1.  Qed.
 
 (** **** Exercise: 2 stars, standard, optional (silly_ex)  
 
@@ -71,11 +71,12 @@ Proof.
 
 Theorem silly_ex :
      (forall n, evenb n = true -> oddb (S n) = true) ->
-     oddb 3 = true ->
-     evenb 4 = true.
+     evenb 3 = true ->
+     oddb 4 = true.
 Proof.
-  intros H.
+  intros H H1.
   apply H.
+  exact H1.
 Qed.
 (** [] *)
 

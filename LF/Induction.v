@@ -641,31 +641,53 @@ Check leb.
 Theorem leb_refl : forall n:nat,
   true = (n <=? n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  - trivial.
+  - trivial.
+Qed.
 
 Theorem zero_nbeq_S : forall n:nat,
   0 =? (S n) = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  - trivial.
+  - trivial.
+Qed.
 
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  destruct b.
+  - trivial.
+  - trivial.
+Qed.
 
 Theorem plus_ble_compat_l : forall n m p : nat,
   n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p H.
+  induction p as [|p' IHp'].
+  - trivial.
+  - simpl.
+    apply IHp'.
+Qed.
 
 Theorem S_nbeq_0 : forall n:nat,
   (S n) =? 0 = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  - trivial.
+  - trivial.
+Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  - trivial.
+  - simpl.
+    rewrite <- plus_n_O_firsttry.
+    reflexivity.
+Qed.
 
 Theorem all3_spec : forall b c : bool,
     orb
@@ -674,17 +696,46 @@ Theorem all3_spec : forall b c : bool,
                (negb c))
   = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  destruct b.
+  - destruct c.
+    + trivial.
+    + trivial.
+  - destruct c.
+    + trivial.
+    + trivial.
+Qed.
 
 Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n' IHn'].
+  - induction m as [|m' IHm'].
+    + trivial.
+    + trivial.
+  - induction m as [|m' IHm'].
+    + intros p. simpl.
+      rewrite <- plus_n_O_firsttry.
+      rewrite <- plus_n_O_firsttry.
+      reflexivity.
+    + intros p. simpl.
+      rewrite -> (IHn' (S m') p).
+      simpl.
+      rewrite -> plus_assoc.
+      reflexivity.
+Qed.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n' IHn'].
+  - simpl.
+    reflexivity.
+  - simpl.
+    intros m p.
+    rewrite -> mult_plus_distr_r.
+    rewrite IHn'.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (eqb_refl)  
@@ -698,7 +749,10 @@ Proof.
 Theorem eqb_refl : forall n : nat,
   true = (n =? n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  - trivial.
+  - trivial.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (plus_swap')  
@@ -715,7 +769,13 @@ Proof.
 Theorem plus_swap' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  rewrite -> plus_assoc.
+  rewrite -> plus_assoc.
+  replace (n + m) with (m + n).
+  reflexivity.
+  apply plus_comm.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard, recommended (binary_commute)  
@@ -770,7 +830,19 @@ Fixpoint nat_to_bin (n:nat) : bin
 
 Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+Qed.
+
+Fixpoint incr (m:bin) : bin := match m with
+| Z => B Z
+| B b' => A (incr b')
+| A b' => B b'
+end.
+
+Fixpoint bin_to_nat (m:bin) : nat := match m with
+| Z => O
+| B b' => plus 1 (mult 2 (bin_to_nat b'))
+| A b' => mult 2 (bin_to_nat b')
+end.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_binary_inverse_a : option (nat*string) := None.

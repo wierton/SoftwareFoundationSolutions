@@ -1,8 +1,212 @@
-(*
+(** * Basics: Functional Programming in Coq *)
+
+(* REMINDER:
+
+          #####################################################
+          ###  PLEASE DO NOT DISTRIBUTE SOLUTIONS PUBLICLY  ###
+          #####################################################
+
+   (See the [Preface] for why.)
+*)
+
+(* ################################################################# *)
+(** * Introduction *)
+
+(** The functional programming style is founded on simple, everyday
+    mathematical intuition: If a procedure or method has no side
+    effects, then (ignoring efficiency) all we need to understand
+    about it is how it maps inputs to outputs -- that is, we can think
+    of it as just a concrete method for computing a mathematical
+    function.  This is one sense of the word "functional" in
+    "functional programming."  The direct connection between programs
+    and simple mathematical objects supports both formal correctness
+    proofs and sound informal reasoning about program behavior.
+
+    The other sense in which functional programming is "functional" is
+    that it emphasizes the use of functions (or methods) as
+    _first-class_ values -- i.e., values that can be passed as
+    arguments to other functions, returned as results, included in
+    data structures, etc.  The recognition that functions can be
+    treated as data gives rise to a host of useful and powerful
+    programming idioms.
+
+    Other common features of functional languages include _algebraic
+    data types_ and _pattern matching_, which make it easy to
+    construct and manipulate rich data structures, and sophisticated
+    _polymorphic type systems_ supporting abstraction and code reuse.
+    Coq offers all of these features.
+
+    The first half of this chapter introduces the most essential
+    elements of Coq's functional programming language, called
+    _Gallina_.  The second half introduces some basic _tactics_ that
+    can be used to prove properties of Coq programs. *)
+
+(* ################################################################# *)
+(** * Data and Functions *)
+(* ================================================================= *)
+(** ** Enumerated Types *)
+
+(** One notable aspect of Coq is that its set of built-in
+    features is _extremely_ small.  For example, instead of providing
+    the usual palette of atomic data types (booleans, integers,
+    strings, etc.), Coq offers a powerful mechanism for defining new
+    data types from scratch, with all these familiar types as
+    instances.
+
+    Naturally, the Coq distribution comes preloaded with an extensive
+    standard library providing definitions of booleans, numbers, and
+    many common data structures like lists and hash tables.  But there
+    is nothing magic or primitive about these library definitions.  To
+    illustrate this, we will explicitly recapitulate all the
+    definitions we need in this course, rather than just getting them
+    implicitly from the library. *)
+
+(* ================================================================= *)
+(** ** Days of the Week *)
+
+(** To see how this definition mechanism works, let's start with
+    a very simple example.  The following declaration tells Coq that
+    we are defining a new set of data values -- a _type_. *)
+
+Inductive day : Type :=
+  | monday
+  | tuesday
+  | wednesday
+  | thursday
+  | friday
+  | saturday
+  | sunday.
+
+(** The type is called [day], and its members are [monday],
+    [tuesday], etc. 
+
+    Having defined [day], we can write functions that operate on
+    days. *)
+
+Definition next_weekday (d:day) : day :=
+  match d with
+  | monday    => tuesday
+  | tuesday   => wednesday
+  | wednesday => thursday
+  | thursday  => friday
+  | friday    => monday
+  | saturday  => monday
+  | sunday    => monday
+  end.
+
+(** One thing to note is that the argument and return types of
+    this function are explicitly declared.  Like most functional
+    programming languages, Coq can often figure out these types for
+    itself when they are not given explicitly -- i.e., it can do _type
+    inference_ -- but we'll generally include them to make reading
+    easier. *)
+
+(** Having defined a function, we should check that it works on
+    some examples.  There are actually three different ways to do this
+    in Coq.  First, we can use the command [Compute] to evaluate a
+    compound expression involving [next_weekday]. *)
+
+Compute (next_weekday friday).
+(* ==> monday : day *)
+
+Compute (next_weekday (next_weekday saturday)).
+(* ==> tuesday : day *)
+
+(** (We show Coq's responses in comments, but, if you have a
+    computer handy, this would be an excellent moment to fire up the
+    Coq interpreter under your favorite IDE -- either CoqIde or Proof
+    General -- and try this for yourself.  Load this file, [Basics.v],
+    from the book's Coq sources, find the above example, submit it to
+    Coq, and observe the result.) *)
+
+(** Second, we can record what we _expect_ the result to be in the
+    form of a Coq example: *)
+
+Example test_next_weekday:
+  (next_weekday (next_weekday saturday)) = tuesday.
+
+(** This declaration does two things: it makes an
+    assertion (that the second weekday after [saturday] is [tuesday]),
+    and it gives the assertion a name that can be used to refer to it
+    later.  Having made the assertion, we can also ask Coq to verify
+    it, like this: *)
+
+Proof. simpl. reflexivity.  Qed.
+
+(** The details are not important for now (we'll come back to
+    them in a bit), but essentially this can be read as "The assertion
+    we've just made can be proved by observing that both sides of the
+    equality evaluate to the same thing, after some simplification."
+
+    Third, we can ask Coq to _extract_, from our [Definition], a
+    program in some other, more conventional, programming
+    language (OCaml, Scheme, or Haskell) with a high-performance
+    compiler.  This facility is very interesting, since it gives us a
+    way to go from proved-correct algorithms written in Gallina to
+    efficient machine code.  (Of course, we are trusting the
+    correctness of the OCaml/Haskell/Scheme compiler, and of Coq's
+    extraction facility itself, but this is still a big step forward
+    from the way most software is developed today.) Indeed, this is
+    one of the main uses for which Coq was developed.  We'll come back
+    to this topic in later chapters. *)
+
+(* ================================================================= *)
+(** ** Homework Submission Guidelines *)
+
+(** If you are using _Software Foundations_ in a course, your
+    instructor may use automatic scripts to help grade your homework
+    assignments.  In order for these scripts to work correctly (so
+    that you get full credit for your work!), please be careful to
+    follow these rules:
+      - The grading scripts work by extracting marked regions of the
+        [.v] files that you submit.  It is therefore important that
+        you do not alter the "markup" that delimits exercises: the
+        Exercise header, the name of the exercise, the "empty square
+        bracket" marker at the end, etc.  Please leave this markup
+        exactly as you find it.
+      - Do not delete exercises.  If you skip an exercise (e.g.,
+        because it is marked Optional, or because you can't solve it),
+        it is OK to leave a partial proof in your [.v] file, but in
+        this case please make sure it ends with [Admitted] (not, for
+        example [Abort]).
+      - It is fine to use additional definitions (of helper functions,
+        useful lemmas, etc.) in your solutions.  You can put these
+        between the exercise header and the theorem you are asked to
+        prove.
+
+    You will also notice that each chapter (like [Basics.v]) is
+    accompanied by a _test script_ ([BasicsTest.v]) that automatically
+    calculates points for the finished homework problems in the
+    chapter.  These scripts are mostly for the auto-grading
+    infrastructure that your instructor may use to help process
+    assignments, but you may also like to use them to double-check
+    that your file is well formatted before handing it in.  In a
+    terminal window either type [make BasicsTest.vo] or do the
+    following:
+
+       coqc -Q . LF Basics.v
+       coqc -Q . LF BasicsTest.v
+
+    There is no need to hand in [BasicsTest.v] itself (or [Preface.v]).
+
+    _If your class is using the Canvas system to hand in assignments_:
+      - If you submit multiple versions of the assignment, you may
+        notice that they are given different names.  This is fine: The
+        most recent submission is the one that will be graded.
+      - To hand in multiple files at the same time (if more than one
+        chapter is assigned in the same week), you need to make a
+        single submission with all the files at once using the button
+        "Add another file" just above the comment box. *)
+
+(* ================================================================= *)
+(** ** Booleans *)
+
+(** In a similar way, we can define the standard type [bool] of
+    booleans, with members [true] and [false]. *)
+
 Inductive bool : Type :=
   | true
   | false.
-*)
 
 (** Although we are rolling our own booleans here for the sake
     of building up everything from scratch, Coq does, of course,
@@ -34,8 +238,41 @@ Definition orb (b1:bool) (b2:bool) : bool :=
   | false => b2
   end.
 
+(** The last two of these illustrate Coq's syntax for
+    multi-argument function definitions.  The corresponding
+    multi-argument application syntax is illustrated by the following
+    "unit tests," which constitute a complete specification -- a truth
+    table -- for the [orb] function: *)
+
+Example test_orb1:  (orb true  false) = true.
+Proof. simpl. reflexivity.  Qed.
+Example test_orb2:  (orb false false) = false.
+Proof. simpl. reflexivity.  Qed.
+Example test_orb3:  (orb false true)  = true.
+Proof. simpl. reflexivity.  Qed.
+Example test_orb4:  (orb true  true)  = true.
+Proof. simpl. reflexivity.  Qed.
+
+(** We can also introduce some familiar syntax for the boolean
+    operations we have just defined. The [Notation] command defines a new
+    symbolic notation for an existing definition. *)
+
 Notation "x && y" := (andb x y).
 Notation "x || y" := (orb x y).
+
+Example test_orb5:  false || false || true = true.
+Proof. simpl. reflexivity. Qed.
+
+(** _A note on notation_: In [.v] files, we use square brackets
+    to delimit fragments of Coq code within comments; this convention,
+    also used by the [coqdoc] documentation tool, keeps them visually
+    separate from the surrounding text.  In the HTML version of the
+    files, these pieces of text appear in a [different font].
+
+    The command [Admitted] can be used as a placeholder for an
+    incomplete proof.  We'll use it in exercises, to indicate the
+    parts that we're leaving for you -- i.e., your job is to replace
+    [Admitted]s with real proofs. *)
 
 (** **** Exercise: 1 star, standard (nandb)  
 
@@ -78,6 +315,263 @@ Example test_andb33:                 (andb3 true false true) = false.
 Proof. reflexivity. Qed.
 Example test_andb34:                 (andb3 true true false) = false.
 Proof. reflexivity. Qed.
+(** [] *)
+
+(* ================================================================= *)
+(** ** Types *)
+
+(** Every expression in Coq has a type, describing what sort of
+    thing it computes. The [Check] command asks Coq to print the type
+    of an expression. *)
+
+Check true.
+(* ===> true : bool *)
+Check (negb true).
+(* ===> negb true : bool *)
+
+(** Functions like [negb] itself are also data values, just like
+    [true] and [false].  Their types are called _function types_, and
+    they are written with arrows. *)
+
+Check negb.
+(* ===> negb : bool -> bool *)
+
+(** The type of [negb], written [bool -> bool] and pronounced
+    "[bool] arrow [bool]," can be read, "Given an input of type
+    [bool], this function produces an output of type [bool]."
+    Similarly, the type of [andb], written [bool -> bool -> bool], can
+    be read, "Given two inputs, both of type [bool], this function
+    produces an output of type [bool]." *)
+
+(* ================================================================= *)
+(** ** New Types from Old *)
+
+(** The types we have defined so far are examples of "enumerated
+    types": their definitions explicitly enumerate a finite set of
+    elements, each of which is just a bare constructor.  Here is a
+    more interesting type definition, where one of the constructors
+    takes an argument: *)
+
+Inductive rgb : Type :=
+  | red
+  | green
+  | blue.
+
+Inductive color : Type :=
+  | black
+  | white
+  | primary (p : rgb).
+
+(** Let's look at this in a little more detail.
+
+    Every inductively defined type ([day], [bool], [rgb], [color],
+    etc.) contains a set of _constructor expressions_ built from
+    _constructors_ like [red], [primary], [true], [false], [monday],
+    etc. 
+
+    The definitions of [rgb] and [color] say how expressions in the
+    sets [rgb] and [color] can be built:
+
+    - [red], [green], and [blue] are the constructors of [rgb];
+    - [black], [white], and [primary] are the constructors of [color];
+    - the expression [red] belongs to the set [rgb], as do the
+      expressions [green] and [blue];
+    - the expressions [black] and [white] belong to the set [color];
+    - if [p] is an expression belonging to the set [rgb], then
+      [primary p] (pronounced "the constructor [primary] applied to
+      the argument [p]") is an expression belonging to the set
+      [color]; and
+    - expressions formed in these ways are the _only_ ones belonging
+      to the sets [rgb] and [color]. *)
+
+(** We can define functions on colors using pattern matching just as
+    we have done for [day] and [bool]. *)
+
+Definition monochrome (c : color) : bool :=
+  match c with
+  | black => true
+  | white => true
+  | primary q => false
+  end.
+
+(** Since the [primary] constructor takes an argument, a pattern
+    matching [primary] should include either a variable (as above --
+    note that we can choose its name freely) or a constant of
+    appropriate type (as below). *)
+
+Definition isred (c : color) : bool :=
+  match c with
+  | black => false
+  | white => false
+  | primary red => true
+  | primary _ => false
+  end.
+
+(** The pattern [primary _] here is shorthand for "[primary] applied
+    to any [rgb] constructor except [red]."  (The wildcard pattern [_]
+    has the same effect as the dummy pattern variable [p] in the
+    definition of [monochrome].) *)
+
+(* ================================================================= *)
+(** ** Tuples *)
+
+(** A single constructor with multiple parameters can be used
+    to create a tuple type. As an example, consider representing
+    the four bits in a nybble (half a byte). We first define
+    a datatype [bit] that resembles [bool] (using the
+    constructors [B0] and [B1] for the two possible bit values),
+    and then define the datatype [nybble], which is essentially
+    a tuple of four bits. *)
+
+Inductive bit : Type :=
+  | B0
+  | B1.
+
+Inductive nybble : Type :=
+  | bits (b0 b1 b2 b3 : bit).
+
+Check (bits B1 B0 B1 B0).
+(* ==> bits B1 B0 B1 B0 : nybble *)
+
+(** The [bits] constructor acts as a wrapper for its contents.
+    Unwrapping can be done by pattern-matching, as in the [all_zero]
+    function which tests a nybble to see if all its bits are O.
+    Note that we are using underscore (_) as a _wildcard pattern_ to
+    avoid inventing variable names that will not be used. *)
+
+Definition all_zero (nb : nybble) : bool :=
+  match nb with
+    | (bits B0 B0 B0 B0) => true
+    | (bits _ _ _ _) => false
+  end.
+
+Compute (all_zero (bits B1 B0 B1 B0)).
+(* ===> false : bool *)
+Compute (all_zero (bits B0 B0 B0 B0)).
+(* ===> true : bool *)
+
+(* ================================================================= *)
+(** ** Modules *)
+
+(** Coq provides a _module system_, to aid in organizing large
+    developments.  In this course we won't need most of its features,
+    but one is useful: If we enclose a collection of declarations
+    between [Module X] and [End X] markers, then, in the remainder of
+    the file after the [End], these definitions are referred to by
+    names like [X.foo] instead of just [foo].  We will use this
+    feature to introduce the definition of the type [nat] in an inner
+    module so that it does not interfere with the one from the
+    standard library (which we want to use in the rest because it
+    comes with a tiny bit of convenient special notation).  *)
+
+Module NatPlayground.
+
+(* ================================================================= *)
+(** ** Numbers *)
+
+(** The types we have defined so far, "enumerated types" such as
+    [day], [bool], and [bit], and tuple types such as [nybble] built
+    from them, share the property that each type has a finite set of
+    values. The natural numbers are an infinite set, and we need to
+    represent all of them in a datatype with a finite number of
+    constructors. There are many representations of numbers to choose
+    from. We are most familiar with decimal notation (base 10), using
+    the digits 0 through 9, for example, to form the number 123.  You
+    may have encountered hexadecimal notation (base 16), in which the
+    same number is represented as 7B, or octal (base 8), where it is
+    173, or binary (base 2), where it is 1111011. Using an enumerated
+    type to represent digits, we could use any of these to represent
+    natural numbers. There are circumstances where each of these
+    choices can be useful.
+
+    Binary is valuable in computer hardware because it can in turn be
+    represented with two voltage levels, resulting in simple
+    circuitry. Analogously, we wish here to choose a representation
+    that makes _proofs_ simpler.
+
+    Indeed, there is a representation of numbers that is even simpler
+    than binary, namely unary (base 1), in which only a single digit
+    is used (as one might do while counting days in prison by scratching
+    on the walls). To represent unary with a Coq datatype, we use
+    two constructors. The capital-letter [O] constructor represents zero.
+    When the [S] constructor is applied to the representation of the
+    natural number _n_, the result is the representation of _n+1_.
+    ([S] stands for "successor", or "scratch" if one is in prison.)
+    Here is the complete datatype definition. *)
+
+Inductive nat : Type :=
+  | O
+  | S (n : nat).
+
+(** With this definition, 0 is represented by [O], 1 by [S O],
+    2 by [S (S O)], and so on. *)
+
+(** The clauses of this definition can be read:
+      - [O] is a natural number (note that this is the letter "[O],"
+        not the numeral "[0]").
+      - [S] can be put in front of a natural number to yield another
+        one -- if [n] is a natural number, then [S n] is too. *)
+
+(** Again, let's look at this in a little more detail.  The definition
+    of [nat] says how expressions in the set [nat] can be built:
+
+    - [O] and [S] are constructors;
+    - the expression [O] belongs to the set [nat];
+    - if [n] is an expression belonging to the set [nat], then [S n]
+      is also an expression belonging to the set [nat]; and
+    - expressions formed in these two ways are the only ones belonging
+      to the set [nat]. *)
+
+(** The same rules apply for our definitions of [day], [bool],
+    [color], etc.
+
+    The above conditions are the precise force of the [Inductive]
+    declaration.  They imply that the expression [O], the expression
+    [S O], the expression [S (S O)], the expression [S (S (S O))], and
+    so on all belong to the set [nat], while other expressions built
+    from data constructors, like [true], [andb true false], [S (S
+    false)], and [O (O (O S))] do not.
+
+    A critical point here is that what we've done so far is just to
+    define a _representation_ of numbers: a way of writing them down.
+    The names [O] and [S] are arbitrary, and at this point they have
+    no special meaning -- they are just two different marks that we
+    can use to write down numbers (together with a rule that says any
+    [nat] will be written as some string of [S] marks followed by an
+    [O]).  If we like, we can write essentially the same definition
+    this way: *)
+
+Inductive nat' : Type :=
+  | stop
+  | tick (foo : nat').
+
+(** The _interpretation_ of these marks comes from how we use them to
+    compute. *)
+
+(** We can do this by writing functions that pattern match on
+    representations of natural numbers just as we did above with
+    booleans and days -- for example, here is the predecessor
+    function: *)
+
+Definition pred (n : nat) : nat :=
+  match n with
+    | O => O
+    | S n' => n'
+  end.
+
+(** The second branch can be read: "if [n] has the form [S n']
+    for some [n'], then return [n']."  *)
+
+End NatPlayground.
+
+(** Because natural numbers are such a pervasive form of data,
+    Coq provides a tiny bit of built-in magic for parsing and printing
+    them: ordinary decimal numerals can be used as an alternative to
+    the "unary" notation defined by the constructors [S] and [O].  Coq
+    prints numbers in decimal form by default: *)
+
+Check (S (S (S (S O)))).
+  (* ===> 4 : nat *)
 
 Definition minustwo (n : nat) : nat :=
   match n with
@@ -86,12 +580,45 @@ Definition minustwo (n : nat) : nat :=
     | S (S n') => n'
   end.
 
+Compute (minustwo 4).
+  (* ===> 2 : nat *)
+
+(** The constructor [S] has the type [nat -> nat], just like
+    [pred] and functions like [minustwo]: *)
+
+Check S.
+Check pred.
+Check minustwo.
+
+(** These are all things that can be applied to a number to yield a
+    number.  However, there is a fundamental difference between the
+    first one and the other two: functions like [pred] and [minustwo]
+    come with _computation rules_ -- e.g., the definition of [pred]
+    says that [pred 2] can be simplified to [1] -- while the
+    definition of [S] has no such behavior attached.  Although it is
+    like a function in the sense that it can be applied to an
+    argument, it does not _do_ anything at all!  It is just a way of
+    writing down numbers.  (Think about standard decimal numerals: the
+    numeral [1] is not a computation; it's a piece of data.  When we
+    write [111] to mean the number one hundred and eleven, we are
+    using [1], three times, to write down a concrete representation of
+    a number.)
+
+    For most function definitions over numbers, just pattern matching
+    is not enough: we also need recursion.  For example, to check that
+    a number [n] is even, we may need to recursively check whether
+    [n-2] is even.  To write such functions, we use the keyword
+    [Fixpoint]. *)
+
 Fixpoint evenb (n:nat) : bool :=
   match n with
   | O        => true
   | S O      => false
   | S (S n') => evenb n'
   end.
+
+(** We can define [oddb] by a similar [Fixpoint] declaration, but here
+    is a simpler definition: *)
 
 Definition oddb (n:nat) : bool   :=   negb (evenb n).
 
@@ -100,11 +627,43 @@ Proof. simpl. reflexivity.  Qed.
 Example test_oddb2:    oddb 4 = false.
 Proof. simpl. reflexivity.  Qed.
 
+(** (You will notice if you step through these proofs that
+    [simpl] actually has no effect on the goal -- all of the work is
+    done by [reflexivity].  We'll see more about why that is shortly.)
+
+    Naturally, we can also define multi-argument functions by
+    recursion.  *)
+
+Module NatPlayground2.
+
 Fixpoint plus (n : nat) (m : nat) : nat :=
   match n with
     | O => m
     | S n' => S (plus n' m)
   end.
+
+(** Adding three to two now gives us five, as we'd expect. *)
+
+Compute (plus 3 2).
+
+(** The simplification that Coq performs to reach this conclusion can
+    be visualized as follows: *)
+
+(*  [plus (S (S (S O))) (S (S O))]
+==> [S (plus (S (S O)) (S (S O)))]
+      by the second clause of the [match]
+==> [S (S (plus (S O) (S (S O))))]
+      by the second clause of the [match]
+==> [S (S (S (plus O (S (S O)))))]
+      by the second clause of the [match]
+==> [S (S (S (S (S O))))]
+      by the first clause of the [match]
+*)
+
+(** As a notational convenience, if two or more arguments have
+    the same type, they can be written together.  In the following
+    definition, [(n m : nat)] means just the same as if we had written
+    [(n : nat) (m : nat)]. *)
 
 Fixpoint mult (n m : nat) : nat :=
   match n with
@@ -115,12 +674,17 @@ Fixpoint mult (n m : nat) : nat :=
 Example test_mult1: (mult 3 3) = 9.
 Proof. simpl. reflexivity.  Qed.
 
+(** You can match two expressions at once by putting a comma
+    between them: *)
+
 Fixpoint minus (n m:nat) : nat :=
   match n, m with
   | O   , _    => O
   | S _ , O    => n
   | S n', S m' => minus n' m'
   end.
+
+End NatPlayground2.
 
 Fixpoint exp (base power : nat) : nat :=
   match power with
@@ -137,17 +701,21 @@ Fixpoint exp (base power : nat) : nat :=
 
     Translate this into Coq. *)
 
-Fixpoint factorial (n:nat) : nat := match n with
-| O => 1
-| S n' => mult (S n') (factorial n')
-end.
-
+Fixpoint factorial (n:nat) : nat :=
+  match n with
+  | O => 1
+  | S n' => mult (S n') (factorial n')
+  end.
 
 Example test_factorial1:          (factorial 3) = 6.
 Proof. reflexivity. Qed.
 Example test_factorial2:          (factorial 5) = (mult 10 12).
 Proof. reflexivity. Qed.
 (** [] *)
+
+(** Again, we can make numerical expressions easier to read and write
+    by introducing notations for addition, multiplication, and
+    subtraction. *)
 
 Notation "x + y" := (plus x y)
                        (at level 50, left associativity)
@@ -161,6 +729,25 @@ Notation "x * y" := (mult x y)
 
 Check ((0 + 1) + 1).
 
+(** (The [level], [associativity], and [nat_scope] annotations
+    control how these notations are treated by Coq's parser.  The
+    details are not important for our purposes, but interested readers
+    can refer to the "More on Notation" section at the end of this
+    chapter.)
+
+    Note that these do not change the definitions we've already made:
+    they are simply instructions to the Coq parser to accept [x + y]
+    in place of [plus x y] and, conversely, to the Coq pretty-printer
+    to display [plus x y] as [x + y]. *)
+
+(** When we say that Coq comes with almost nothing built-in, we really
+    mean it: even equality testing is a user-defined operation!
+
+    Here is a function [eqb], which tests natural numbers for
+    [eq]uality, yielding a [b]oolean.  Note the use of nested
+    [match]es (we could also have used a simultaneous match, as we did
+    in [minus].) *)
+
 Fixpoint eqb (n m : nat) : bool :=
   match n with
   | O => match m with
@@ -172,6 +759,9 @@ Fixpoint eqb (n m : nat) : bool :=
             | S m' => eqb n' m'
             end
   end.
+
+(** Similarly, the [leb] function tests whether its first argument is
+    less than or equal to its second argument, yielding a boolean. *)
 
 Fixpoint leb (n m : nat) : bool :=
   match n with
@@ -208,7 +798,6 @@ Proof. simpl. reflexivity.  Qed.
     function, but you can use two if you need to.) *)
 
 Definition ltb (n m : nat) : bool := notb (eqb (minus m n) 0).
-
 
 Notation "x <? y" := (ltb x y) (at level 70) : nat_scope.
 
@@ -369,10 +958,9 @@ Proof.
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
 Proof.
-  intros n m o H.
+  intros.
+  rewrite <- H0.
   rewrite <- H.
-  intros H1.
-  rewrite <- H1.
   reflexivity.
 Qed.
 (** [] *)
@@ -410,28 +998,6 @@ Proof.
   simpl.
   rewrite -> H.
   reflexivity.
-Qed.
-
-Theorem plus_n_0_eq_n:
-  forall n:nat, n + 0 = n.
-Proof.
-  intros n.
-  induction n as [|n'].
-  - simpl. reflexivity.
-  - simpl. (* (plus (S n') 0) = (S n') => S (plus n' 0) = S n' *)
-    rewrite -> IHn'.
-    reflexivity.
-Qed.
-
-Theorem mult_n_1_eq_n :
-  forall n:nat, n * 1 = n.
-Proof.
-  intros n.
-  induction n as [|n'].
-  - simpl. reflexivity.
-  - simpl. (* (S n') * 1 = S n' => (plus 1 (mult n' 1)) *)
-    rewrite -> IHn'.
-    reflexivity.
 Qed.
 
   (* (N.b. This proof can actually be completed with tactics other than
@@ -681,7 +1247,7 @@ Proof.
   - simpl. reflexivity.
   - simpl. reflexivity.
 Qed.
-(* 0 =? (plus (S n') 1) ==> 0 =? S (plus n' 1) *)
+(** [] *)
 
 (* ================================================================= *)
 (** ** More on Notation (Optional) *)
@@ -693,14 +1259,12 @@ Qed.
 
     Recall the notation definitions for infix plus and times: *)
 
-(*
 Notation "x + y" := (plus x y)
                        (at level 50, left associativity)
                        : nat_scope.
 Notation "x * y" := (mult x y)
                        (at level 40, left associativity)
                        : nat_scope.
-*)
 
 (** For each notation symbol in Coq, we can specify its _precedence
     level_ and its _associativity_.  The precedence level [n] is
@@ -789,13 +1353,13 @@ Theorem identity_fn_applied_twice :
   (forall (x : bool), f x = x) ->
   forall (b : bool), f (f b) = b.
 Proof.
-  intros f H b.
-  destruct b eqn:Eb.
-  - rewrite -> H.
-    rewrite -> H.
+  intros.
+  destruct b.
+  - rewrite H.
+    rewrite H.
     reflexivity.
-  - rewrite -> H.
-    rewrite -> H.
+  - rewrite H.
+    rewrite H.
     reflexivity.
 Qed.
 
@@ -842,7 +1406,6 @@ Proof.
     reflexivity.
 Qed.
 
-
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (binary)  
@@ -880,17 +1443,19 @@ Inductive bin : Type :=
         for binary numbers, and a function [bin_to_nat] to convert
         binary numbers to unary numbers. *)
 
-Fixpoint incr (m:bin) : bin := match m with
-| Z => B Z
-| B b' => A (incr b')
-| A b' => B b'
-end.
+Fixpoint incr (m:bin) : bin :=
+  match m with
+  | Z => B Z
+  | B b' => A (incr b')
+  | A b' => B b'
+  end.
 
-Fixpoint bin_to_nat (m:bin) : nat := match m with
-| Z => O
-| B b' => plus 1 (mult 2 (bin_to_nat b'))
-| A b' => mult 2 (bin_to_nat b')
-end.
+Fixpoint bin_to_nat (m:bin) : nat :=
+  match m with
+  | Z => O
+  | B b' => plus 1 (mult 2 (bin_to_nat b'))
+  | A b' => mult 2 (bin_to_nat b')
+  end.
 
 Example incr_1: incr Z = B Z.
 Proof. reflexivity. Qed.
@@ -909,25 +1474,23 @@ Proof. reflexivity. Qed.
 Example bin_to_nat_4: bin_to_nat (B (B Z)) = S (S (S O)).
 Proof. reflexivity. Qed.
 
-Lemma incr_B_b: forall b:bin, incr (B b) = A (incr b).
-Proof. destruct b. reflexivity. reflexivity. reflexivity. Qed.
-Lemma bin_to_nat_A_b: forall b:bin, bin_to_nat (A b) = mult 2 (bin_to_nat b).
-Proof. destruct b. reflexivity. reflexivity. reflexivity. Qed.
-Lemma bin_to_nat_B_b: forall b:bin, bin_to_nat (B b) = plus 1 (mult 2 (bin_to_nat b)).
-Proof. destruct b. reflexivity. reflexivity. reflexivity. Qed.
-
-Lemma mult_S_n':
-  forall n m:nat, mult (S n) m = plus m (mult n m).
+Theorem plus_n_0_eq_n:
+  forall n:nat, n + 0 = n.
 Proof.
-  destruct n.
-  - reflexivity.
-  - reflexivity.
+  intros n.
+  induction n as [|n'].
+  - simpl. reflexivity.
+  - simpl. (* (plus (S n') 0) = (S n') => S (plus n' 0) = S n' *)
+    rewrite -> IHn'.
+    reflexivity.
 Qed.
 
 Theorem mult_2_eq_n_plus_n:
   forall n:nat, mult 2 n = n + n.
 Proof.
   intros n.
+  assert(mult_S_n': forall n m:nat, mult (S n) m = plus m (mult n m)).
+  { reflexivity. }
   rewrite -> mult_S_n'.
   rewrite -> mult_S_n'.
   rewrite -> mult_0_l.
@@ -978,6 +1541,66 @@ Proof.
 Qed.
 
 (* mult 2 (S (bin_to_nat b')) = S (plus 1 (mult 2 (bin_to_nat b'))) *)
+Theorem mult_shit:
+  forall n:nat, mult 2 (S n) = S (1 + 2 * n).
+Proof.
+  induction n as [|n'].
+  - reflexivity.
+  - (* Case n = S n' *)
+    (* IHn': mult 2 (S n') = S (1 + 2 * n') *)
+    (* mult 2 (S n) = S (1 + 2 * n). *)
+    simpl.
+    (* S (S (plus n' (S (S (plus n' 0))))) = 
+    *  S (S (S (n' + S (n' + 0)))) *)
+    rewrite <- (plus_is_commutative (S (n' + 0)) n').
+    rewrite <- (plus_is_commutative 0 n').
+    simpl.
+    rewrite <- (plus_is_commutative (S (S n')) n').
+    simpl.
+    reflexivity.
+Qed.
+
+Theorem incr_and_bin_to_nat:
+  forall n:bin, bin_to_nat (incr n) = S (bin_to_nat n).
+Proof.
+  intros n.
+  induction n as [|b'|b'].
+  - simpl. (* bin_to_nat *)
+    reflexivity.
+  - (* IHb': bin_to_nat (incr b') = S (bin_to_nat b') *)
+    (* ---------------------------------------------- *)
+    (* bin_to_nat (incr (A b')) = S (bin_to_nat (A b')) *)
+    simpl.
+    reflexivity.
+  - (* IHb': bin_to_nat (incr b') = S (bin_to_nat b') *)
+    (* ---------------------------------------------- *)
+    (* bin_to_nat (incr (B b')) = S (bin_to_nat (B b')) *)
+    assert (incr_B_b:forall b:bin, incr (B b) = A (incr b)).
+    { reflexivity. }
+    rewrite -> incr_B_b.
+    (* bin_to_nat (A (incr b')) = S (bin_to_nat (B b')) *)
+    assert (bin_to_nat_A_b: forall b:bin, bin_to_nat (A b) = mult 2 (bin_to_nat b)).
+    { reflexivity. }
+    rewrite -> bin_to_nat_A_b.
+    (* mult 2 (bin_to_nat (incr b')) = S (bin_to_nat (B b')) *)
+    rewrite -> IHb'.
+    (* mult 2 (S (bin_to_nat b')) = S (bin_to_nat (B b')) *)
+    assert (bin_to_nat_B_b: forall b:bin, bin_to_nat (B b) = plus 1 (mult 2 (bin_to_nat b))).
+    { reflexivity. }
+    rewrite -> bin_to_nat_B_b.
+    (* 2 * (S (bin_to_nat b')) = S (1 + (2 * (bin_to_nat b'))) *)
+    rewrite <- (mult_shit (bin_to_nat b')).
+    reflexivity.
+Qed.
+
+(**    (b) Write five unit tests [test_bin_incr1], [test_bin_incr2], etc.
+        for your increment and binary-to-unary functions.  (A "unit
+        test" in Coq is a specific [Example] that can be proved with
+        just [reflexivity], as we've done for several of our
+        definitions.)  Notice that incrementing a binary number and
+        then converting it to unary should yield the same result as
+        first converting it to unary and then incrementing. *)
+
 (* FILL IN HERE *)
 
 (* Do not modify the following line: *)
@@ -985,4 +1608,3 @@ Definition manual_grade_for_binary : option (nat*string) := None.
 (** [] *)
 
 (* Wed Jan 9 12:02:44 EST 2019 *)
-

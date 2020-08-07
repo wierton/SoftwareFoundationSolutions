@@ -819,8 +819,11 @@ Definition manual_grade_for_binary_commute : option (nat*string) := None.
     (a) First, write a function to convert natural numbers to binary
         numbers. *)
 
-Fixpoint nat_to_bin (n:nat) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint nat_to_bin (n:nat) : bin :=
+  match n with
+  | O => Z
+  | S n' => incr (nat_to_bin n')
+  end.
 
 (** Prove that, if we start with any [nat], convert it to binary, and
     convert it back, we get the same [nat] we started with.  (Hint: If
@@ -830,19 +833,32 @@ Fixpoint nat_to_bin (n:nat) : bin
 
 Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
 Proof.
-Admitted.
-
-Fixpoint incr (m:bin) : bin := match m with
-| Z => B Z
-| B b' => A (incr b')
-| A b' => B b'
-end.
-
-Fixpoint bin_to_nat (m:bin) : nat := match m with
-| Z => O
-| B b' => plus 1 (mult 2 (bin_to_nat b'))
-| A b' => mult 2 (bin_to_nat b')
-end.
+  induction n as [|n' IHn'].
+  - reflexivity.
+  - simpl.
+    destruct (nat_to_bin n').
+    + simpl.
+      rewrite <- IHn'.
+      reflexivity.
+    + simpl.
+      rewrite <- plus_n_O.
+      simpl in IHn'.
+      rewrite <- plus_n_O in IHn'.
+      rewrite -> IHn'.
+      reflexivity.
+    + simpl.
+      simpl in IHn'.
+      rewrite <- plus_n_O.
+      rewrite <- plus_n_O in IHn'.
+      rewrite -> incr_and_bin_to_nat.
+      assert (H: forall a b:nat, S (a + b) = S a + b).
+      { trivial. }
+      rewrite <- H.
+      rewrite -> plus_comm.
+      rewrite <- H.
+      rewrite -> IHn'.
+      reflexivity.
+Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_binary_inverse_a : option (nat*string) := None.

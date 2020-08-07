@@ -1485,19 +1485,6 @@ Proof.
     reflexivity.
 Qed.
 
-Theorem mult_2_eq_n_plus_n:
-  forall n:nat, mult 2 n = n + n.
-Proof.
-  intros n.
-  assert(mult_S_n': forall n m:nat, mult (S n) m = plus m (mult n m)).
-  { reflexivity. }
-  rewrite -> mult_S_n'.
-  rewrite -> mult_S_n'.
-  rewrite -> mult_0_l.
-  rewrite -> plus_n_0_eq_n.
-  reflexivity.
-Qed.
-
 Theorem plus_is_commutative:
   forall a b:nat, a + b = b + a.
 Proof.
@@ -1540,26 +1527,6 @@ Proof.
       reflexivity.
 Qed.
 
-(* mult 2 (S (bin_to_nat b')) = S (plus 1 (mult 2 (bin_to_nat b'))) *)
-Theorem mult_shit:
-  forall n:nat, mult 2 (S n) = S (1 + 2 * n).
-Proof.
-  induction n as [|n'].
-  - reflexivity.
-  - (* Case n = S n' *)
-    (* IHn': mult 2 (S n') = S (1 + 2 * n') *)
-    (* mult 2 (S n) = S (1 + 2 * n). *)
-    simpl.
-    (* S (S (plus n' (S (S (plus n' 0))))) = 
-    *  S (S (S (n' + S (n' + 0)))) *)
-    rewrite <- (plus_is_commutative (S (n' + 0)) n').
-    rewrite <- (plus_is_commutative 0 n').
-    simpl.
-    rewrite <- (plus_is_commutative (S (S n')) n').
-    simpl.
-    reflexivity.
-Qed.
-
 Theorem incr_and_bin_to_nat:
   forall n:bin, bin_to_nat (incr n) = S (bin_to_nat n).
 Proof.
@@ -1573,23 +1540,14 @@ Proof.
     simpl.
     reflexivity.
   - (* IHb': bin_to_nat (incr b') = S (bin_to_nat b') *)
-    (* ---------------------------------------------- *)
-    (* bin_to_nat (incr (B b')) = S (bin_to_nat (B b')) *)
-    assert (incr_B_b:forall b:bin, incr (B b) = A (incr b)).
-    { reflexivity. }
-    rewrite -> incr_B_b.
-    (* bin_to_nat (A (incr b')) = S (bin_to_nat (B b')) *)
-    assert (bin_to_nat_A_b: forall b:bin, bin_to_nat (A b) = mult 2 (bin_to_nat b)).
-    { reflexivity. }
-    rewrite -> bin_to_nat_A_b.
-    (* mult 2 (bin_to_nat (incr b')) = S (bin_to_nat (B b')) *)
+    simpl.
+    rewrite -> plus_n_0_eq_n.
+    rewrite -> plus_n_0_eq_n.
     rewrite -> IHb'.
-    (* mult 2 (S (bin_to_nat b')) = S (bin_to_nat (B b')) *)
-    assert (bin_to_nat_B_b: forall b:bin, bin_to_nat (B b) = plus 1 (mult 2 (bin_to_nat b))).
-    { reflexivity. }
-    rewrite -> bin_to_nat_B_b.
-    (* 2 * (S (bin_to_nat b')) = S (1 + (2 * (bin_to_nat b'))) *)
-    rewrite <- (mult_shit (bin_to_nat b')).
+    assert (H: forall a b:nat, S (a + b) = S a + b).
+    { trivial. }
+    rewrite -> H.
+    rewrite -> (plus_is_commutative (S (bin_to_nat b')) (bin_to_nat b')).
     reflexivity.
 Qed.
 

@@ -990,15 +990,42 @@ Qed.
     lemma below.  (Of course, your definition should _not_ just
     restate the left-hand side of [All_In].) *)
 
-Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop :=
+  match l with
+  | nil => True
+  | e :: l' => P e /\ All P l'
+  end.
 
 Lemma All_In :
   forall T (P : T -> Prop) (l : list T),
     (forall x, In x l -> P x) <->
     All P l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T P l.
+  split.
+  - induction l as [|e l' IHl'].
+    + intros H.
+      reflexivity.
+    + intros H.
+      simpl in *.
+      split.
+      -- apply H.
+         left. reflexivity.
+      -- apply IHl'.
+         intros x HInxl'.
+         apply H.
+         right.
+         apply HInxl'.
+  - induction l as [|e l' IHl'].
+    + simpl.
+      intros Htrue x [].
+    + simpl.
+      intros [HPe HAllPl'] x [Hex | HInxl'].
+      -- rewrite <- Hex.
+         exact HPe.
+      -- apply (IHl' HAllPl').
+         exact HInxl'.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (combine_odd_even)  

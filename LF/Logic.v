@@ -415,11 +415,11 @@ Proof.
 Lemma not_implies_our_not : forall (P:Prop),
   ~ P -> (forall (Q:Prop), P -> Q).
 Proof.
-  intros.
-  simpl in *.
+  intros P H Q HP.
   unfold "~" in H.
-  Show.
-Admitted.
+  apply H in HP.
+  destruct HP.
+Qed.
 (** [] *)
 
 (** Inequality is a frequent enough example of negated statement
@@ -437,18 +437,15 @@ Proof.
       [~(0 = 1)], that is [not (0 = 1)], which unfolds to
       [(0 = 1) -> False]. (We use [unfold not] explicitly here
       to illustrate that point, but generally it can be omitted.) *)
-  Show Intros.
-  Show.
+  unfold not.
   (** To prove an inequality, we may assume the opposite
       equality... *)
   intros contra.
-  Show.
   (** ... and deduce a contradiction from it. Here, the
       equality [O = S O] contradicts the disjointness of
       constructors [O] and [S], so [discriminate] takes care
       of it. *)
   discriminate contra.
-  Show.
 Qed.
 
 (** It takes a little practice to get used to working with negation in
@@ -492,14 +489,24 @@ Definition manual_grade_for_double_neg_inf : option (nat*string) := None.
 Theorem contrapositive : forall (P Q : Prop),
   (P -> Q) -> (~Q -> ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q HPQ HnQ HnP.
+  unfold "~" in *.
+  apply HnQ.
+  apply HPQ.
+  apply HnP.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (not_both_true_and_false)  *)
 Theorem not_both_true_and_false : forall P : Prop,
   ~ (P /\ ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold "~".
+  intros.
+  destruct H as [HPt HPf].
+  apply HPf.
+  apply HPt.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, advanced (informal_not_PNP)  
@@ -610,19 +617,46 @@ Qed.
 Theorem iff_refl : forall P : Prop,
   P <-> P.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P.
+  split.
+  - intros HP. apply HP.
+  - intros HP. apply HP.
+Qed.
 
 Theorem iff_trans : forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q R HPQ HQR.
+  rewrite -> HQR in HPQ.
+  apply HPQ.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (or_distributes_over_and)  *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q R.
+  split.
+  - intros H.
+    destruct H as [HP | [HQ HR]].
+    + split.
+      * left. apply HP.
+      * left. apply HP.
+    + split.
+      * right. apply HQ.
+      * right. apply HR.
+  - intros H.
+    destruct H as [HPQ HPR].
+    destruct HPQ as [HP | HQ].
+    + left. apply HP.
+    + destruct HPR as [HP' | HR].
+      * left. apply HP'.
+      * right.
+        split.
+        -- apply HQ.
+        -- apply HR.
+Qed.
 (** [] *)
 
 (** Some of Coq's tactics treat [iff] statements specially, avoiding
@@ -723,7 +757,12 @@ Proof.
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold "~".
+  intros X P HPx Hex.
+  inversion Hex as [x' H].
+  apply H.
+  apply HPx.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (dist_exists_or)  
@@ -734,7 +773,22 @@ Proof.
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
 Proof.
-   (* FILL IN HERE *) Admitted.
+  intros X P Q.
+  split.
+  - intros HPQx.
+    inversion HPQx as [x' HPQx'].
+    destruct HPQx' as [HPx' | HQx'].
+    + left. exists x'. apply HPx'.
+    + right. exists x'. apply HQx'.
+  - intros HPxQx.
+    destruct HPxQx as [HPx | HQx].
+    + inversion HPx as [x' HPx'].
+      exists x'.
+      left. apply HPx'.
+    + inversion HQx as [x' HQx'] .
+      exists x'.
+      right. apply HQx'.
+Qed.
 (** [] *)
 
 (* ################################################################# *)

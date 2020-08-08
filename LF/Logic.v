@@ -835,6 +835,19 @@ Proof.
   - exists 1. rewrite <- H. reflexivity.
   - exists 2. rewrite <- H. reflexivity.
 Qed.
+
+Example In_example_2' :
+  forall n, In n [2; 4] ->
+  exists n', n = 2 * n'.
+Proof.
+  (* WORKED IN CLASS *)
+  simpl.
+  intros n H.
+  destruct H as [H2 | [H4 | []]].
+  - rewrite <- H2. exists 1. reflexivity.
+  - rewrite <- H4. exists 2. reflexivity.
+Qed.
+
 (** (Notice the use of the empty pattern to discharge the last case
     _en passant_.) *)
 
@@ -858,6 +871,23 @@ Proof.
     + right. apply IHl'. apply H.
 Qed.
 
+Lemma In_map' :
+  forall (A B : Type) (f : A -> B) (l : list A) (x : A),
+    In x l ->
+    In (f x) (map f l).
+Proof.
+  intros A B f l x.
+  simpl.
+  induction l as [|e l' IHl'].
+  - simpl.
+    intros H.
+    destruct H.
+  - simpl.
+    intros [Hex | HInxl'].
+    + left. rewrite -> Hex. reflexivity.
+    + right. apply IHl'. exact HInxl'.
+Qed.
+
 (** This way of defining propositions recursively, though convenient
     in some cases, also has some drawbacks.  In particular, it is
     subject to Coq's usual restrictions regarding the definition of
@@ -872,7 +902,45 @@ Lemma In_map_iff :
     In y (map f l) <->
     exists x, f x = y /\ In x l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros A B f l y.
+  simpl.
+  split.
+  - induction l as [|e l' IHl'].
+    + intros [].
+    + simpl.
+      intros H.
+      destruct H as [Hfey | HInymfl'].
+      -- exists e.
+         split.
+         ++ apply Hfey.
+         ++ left. reflexivity.
+      -- apply IHl' in HInymfl'.
+         inversion HInymfl' as [e' Hfxy_HInxl'].
+         destruct Hfxy_HInxl' as [Hfxy HInxl'].
+         exists e'.
+         split.
+         ++ apply Hfxy.
+         ++ right. apply HInxl'.
+  - induction l as [|e l' IHl'].
+    + simpl.
+      intros H.
+      inversion H as [x' Hfxy_False].
+      simpl in Hfxy_False.
+      destruct Hfxy_False as [Hfx'y HFalse].
+      apply HFalse.
+    + simpl.
+      intros H.
+      inversion H as [e' Hfxy_HexInxl'].
+      destruct Hfxy_HexInxl' as [Hfxy [Hex | HInxl']].
+      -- rewrite <- Hex in Hfxy.
+         left. apply Hfxy.
+      -- right.
+         apply IHl'.
+         exists e'.
+         split.
+         ++ apply Hfxy.
+         ++ apply HInxl'.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (In_app_iff)  *)

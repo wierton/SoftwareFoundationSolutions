@@ -947,7 +947,35 @@ Qed.
 Lemma In_app_iff : forall A l l' (a:A),
   In a (l++l') <-> In a l \/ In a l'.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros A l l' a.
+  split.
+  - induction l as [|el ll IHll].
+    + simpl.
+      intros H. right. exact H.
+    + simpl.
+      intros [Hela | HInallpl'].
+      -- left. left. exact Hela.
+      -- apply IHll in HInallpl'.
+         destruct HInallpl' as [HInall | HInal'].
+         ++ left. right. apply HInall.
+         ++ right. apply HInal'.
+  - simpl.
+    induction l as [|el ll IHll].
+    + simpl.
+      intros [[] | H].
+      -- apply H.
+    + simpl.
+      intros [[Hela | HInall] | HInal'].
+      -- left. exact Hela.
+      -- right.
+         apply IHll.
+         left.
+         exact HInall.
+      -- right.
+         apply IHll.
+         right.
+         exact HInal'.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard, recommended (All)  

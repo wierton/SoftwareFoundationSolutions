@@ -1036,8 +1036,11 @@ Qed.
     equivalent to [Podd n] when [n] is odd and equivalent to [Peven n]
     otherwise. *)
 
-Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop :=
+  fun (n:nat) => match (oddb n) with
+  | true => Podd n
+  | false => Peven n
+  end.
 
 (** To test your definition, prove the following facts: *)
 
@@ -1047,7 +1050,17 @@ Theorem combine_odd_even_intro :
     (oddb n = false -> Peven n) ->
     combine_odd_even Podd Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n Hodd Heven.
+  destruct (oddb n) eqn:Eoddbn.
+  - unfold combine_odd_even.
+    rewrite -> Eoddbn.
+    apply Hodd.
+    reflexivity.
+  - unfold combine_odd_even.
+    rewrite -> Eoddbn.
+    apply Heven.
+    reflexivity.
+Qed.
 
 Theorem combine_odd_even_elim_odd :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -1055,7 +1068,11 @@ Theorem combine_odd_even_elim_odd :
     oddb n = true ->
     Podd n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n Hcom Hoddb.
+  unfold combine_odd_even in Hcom.
+  rewrite -> Hoddb in Hcom.
+  exact Hcom.
+Qed.
 
 Theorem combine_odd_even_elim_even :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -1063,7 +1080,11 @@ Theorem combine_odd_even_elim_even :
     oddb n = false ->
     Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n Hcom Hoddb.
+  unfold combine_odd_even in Hcom.
+  rewrite -> Hoddb in Hcom.
+  exact Hcom.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -1235,7 +1256,7 @@ Example lemma_application_ex :
 Proof.
   intros n ns H.
   destruct (proj1 _ _ (In_map_iff _ _ _ _ _) H)
-           as [m [Hm _]].
+           as [m [Hm Hn]].
   rewrite mult_0_r in Hm. rewrite <- Hm. reflexivity.
 Qed.
 
@@ -1369,7 +1390,17 @@ Definition tr_rev {X} (l : list X) : list X :=
     case.  Prove that the two definitions are indeed equivalent. *)
 
 Lemma tr_rev_correct : forall X, @tr_rev X = @rev X.
-(* FILL IN HERE *) Admitted.
+Proof.
+  intros.
+  apply functional_extensionality.
+  intros x.
+  induction x as [|e l' IHl'].
+  - reflexivity.
+  - simpl.
+    unfold tr_rev.
+    simpl.
+    reflexivity.
+Qed.
 (** [] *)
 
 (* ================================================================= *)

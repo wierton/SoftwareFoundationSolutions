@@ -1298,14 +1298,48 @@ Qed.
     things than necessary.  Hint: what property do you need of [l1]
     and [l2] for [split (combine l1 l2) = (l1,l2)] to be true?) *)
 
-Definition split_combine_statement : Prop
+Definition split_combine_statement : Prop :=
   (* ("[: Prop]" means that we are giving a name to a
      logical proposition here.) *)
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+  forall X Y (l1 l2 : list (X * Y)),
+  (length l1 = length l2) ->
+  split (combine l1 l2) = (l1, l2).
+
+Theorem list_length_0_is_nil:
+  forall (X:Type) (l: list X),
+  (length l = 0) <-> l = nil.
+Proof.
+  split.
+  - destruct l.
+    + reflexivity.
+    + intros H.
+      discriminate H.
+  - intros H.
+    rewrite -> H.
+    reflexivity.
+Qed.
 
 Theorem split_combine : split_combine_statement.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X Y.
+  induction l1 as [|e1 l1' IHl1'].
+  - simpl.
+    intros.
+    symmetry in H.
+    apply list_length_0_is_nil in H.
+    rewrite -> H.
+    reflexivity.
+  - intros.
+    induction l2 as [|e2 l2' IHl2'].
+    + discriminate H.
+    + simpl.
+      specialize (IHl1' l2') as IHl1'l2'.
+      simpl in H.
+      injection H as l1'_l2'_eq_length.
+      apply IHl1'l2' in l1'_l2'_eq_length as indIH.
+      rewrite -> indIH.
+      reflexivity.
+Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_split_combine : option (nat*string) := None.

@@ -1450,13 +1450,35 @@ Proof.
   - simpl. apply IHk'.
 Qed.
 
+Fixpoint half(n:nat) :=
+  match n with
+  | O => O
+  | S O => O
+  | S (S n') => 1 + half n'
+  end.
+
 (** **** Exercise: 3 stars, standard (evenb_double_conv)  *)
 Theorem evenb_double_conv : forall n,
   exists k, n = if evenb n then double k
                 else S (double k).
 Proof.
   (* Hint: Use the [evenb_S] lemma from [Induction.v]. *)
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n' IHn'].
+  - exists O.
+    reflexivity.
+  - inversion IHn' as [k' IHk'].
+    destruct (evenb n') eqn:Een'.
+    + exists k'.
+      rewrite -> evenb_S.
+      rewrite -> Een'.
+      rewrite -> IHk'.
+      reflexivity.
+    + exists (S k').
+      rewrite -> evenb_S.
+      rewrite -> Een'.
+      rewrite -> IHk'.
+      reflexivity.
+Qed.
 (** [] *)
 
 Theorem even_bool_prop : forall n,
@@ -1614,12 +1636,40 @@ Qed.
 Lemma andb_true_iff : forall b1 b2:bool,
   b1 && b2 = true <-> b1 = true /\ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  split.
+  - destruct b1.
+    + destruct b2.
+      -- split. trivial. trivial.
+      -- split. trivial. trivial.
+    + destruct b2.
+      -- split. trivial. trivial.
+      -- split. trivial. trivial.
+  - destruct b1.
+    + destruct b2.
+      -- intros H. apply H.
+      -- intros H. apply H.
+    + destruct b2.
+      -- intros H. apply H.
+      -- intros H. apply H.
+Qed.
 
 Lemma orb_true_iff : forall b1 b2,
   b1 || b2 = true <-> b1 = true \/ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  split.
+  - destruct b1.
+    + left. reflexivity.
+    + destruct b2.
+      -- right. reflexivity.
+      -- intros H. discriminate H.
+  - intros H.
+    destruct H as [H1 | H2].
+    + rewrite -> H1. reflexivity.
+    + rewrite -> H2.
+      destruct b1.
+      -- reflexivity.
+      -- reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (eqb_neq)  
@@ -1631,7 +1681,12 @@ Proof.
 Theorem eqb_neq : forall x y : nat,
   x =? y = false <-> x <> y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  split.
+  - destruct (x =? y) eqn:Hne.
+    + intros H. discriminate H.
+    + injection Hne.
+      Show.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (eqb_list)  

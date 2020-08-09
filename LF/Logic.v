@@ -1249,14 +1249,49 @@ Qed.
     works are not critical -- the goal here is just to illustrate what
     can be done.) *)
 
+Check proj1.
+Check In_map_iff.
+Example lemma_application_ex':
+  forall {n : nat} {ns : list nat},
+    In n (map (fun m => m * 0) ns) ->
+    n = 0.
+Proof.
+  intros.
+  apply In_map_iff in H.
+  inversion H as [x' H'].
+  apply proj1 in H'.
+  rewrite mult_0_r in H'.
+  rewrite <- H'.
+  reflexivity.
+Qed.
+
+(*
+Example xxx:
+  (0 = 2) -> (0 = 3).
+Proof. Admitted.
+Example yyy:
+  (0 = 2) -> (0 = 3).
+Proof.
+  intros H.
+  apply (xxx (0 = 2)). (* this fails. *)
+Qed.
+
+Theorem P_implies_P:
+  forall (P:Prop), P -> P.
+Proof.
+  intros P.
+  intros H. exact H.
+Qed.
+*)
+
 Example lemma_application_ex :
   forall {n : nat} {ns : list nat},
     In n (map (fun m => m * 0) ns) ->
     n = 0.
 Proof.
   intros n ns H.
-  destruct (proj1 _ _ (In_map_iff _ _ _ _ _) H)
-           as [m [Hm Hn]].
+  pose proof (proj1 _ _ (In_map_iff nat nat _ ns n) H) as HHH.
+  destruct HHH as [m [Hm Hn]].
   rewrite mult_0_r in Hm. rewrite <- Hm. reflexivity.
 Qed.
 
@@ -1801,7 +1836,15 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
 Theorem forallb_true_iff : forall X test (l : list X),
    forallb test l = true <-> All (fun x => test x = true) l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l as [|e l' IHl'].
+  - simpl. split.
+    + intros H. reflexivity.
+    + intros H. reflexivity.
+  - simpl.
+    rewrite -> andb_true_iff.
+    rewrite -> IHl'.
+    reflexivity.
+Qed.
 
 (** Are there any important properties of the function [forallb] which
     are not captured by this specification? *)
@@ -1939,7 +1982,15 @@ Qed.
 Theorem excluded_middle_irrefutable: forall (P:Prop),
   ~ ~ (P \/ ~ P).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold not.
+  intros P f.
+  apply f.
+  right.
+  intro p.
+  apply f.
+  left.
+  apply p.
+Qed. (* quote: https://stackoverflow.com/questions/32812834/how-to-prove-excluded-middle-is-irrefutable-in-coq *)
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (not_exists_dist)  
@@ -1959,8 +2010,7 @@ Theorem not_exists_dist :
   excluded_middle ->
   forall (X:Type) (P : X -> Prop),
     ~ (exists x, ~ P x) -> (forall x, P x).
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof. Admitted.
 (** [] *)
 
 (** **** Exercise: 5 stars, standard, optional (classical_axioms)  

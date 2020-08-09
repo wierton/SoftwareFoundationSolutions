@@ -1677,15 +1677,53 @@ Qed.
     The following theorem is an alternate "negative" formulation of
     [eqb_eq] that is more convenient in certain
     situations (we'll see examples in later chapters). *)
+Theorem S_injective_plus:
+  forall x y:nat, (x = y) <-> (S x = S y).
+Proof.
+  split.
+  - intros H.
+    rewrite -> H.
+    reflexivity.
+  - intros H.
+    inversion H as [H'].
+    reflexivity.
+Qed.
+
+Theorem S_inj_plus:
+  forall (x y:nat) (b:bool), (x =? y = b) <-> (S x =? S y = b).
+Proof.
+  split.
+  - simpl.  intros H.  apply H.
+  - apply S_inj.
+Qed.
 
 Theorem eqb_neq : forall x y : nat,
   x =? y = false <-> x <> y.
 Proof.
+  unfold "~".
   split.
-  - destruct (x =? y) eqn:Hne.
-    + intros H. discriminate H.
-    + injection Hne.
-      Show.
+  generalize dependent y.
+  - induction x as [|x' IHx'].
+    + destruct y as [|y'].
+      -- intros H. discriminate H.
+      -- intros H H0.
+         destruct H0.
+         ++ simpl in H.
+            discriminate H.
+    + induction y as [|y' IHy'].
+      -- intros H H0.
+         simpl in H0.
+         discriminate H0.
+      -- rewrite <- S_inj_plus.
+         rewrite <- S_injective_plus.
+         apply IHx'.
+  - destruct (x =? y) eqn:Exy.
+    + pose proof (eqb_true x y Exy) as Esame.
+      intros H.
+      rewrite -> Esame in H.
+      congruence.
+    + intros H.
+      reflexivity.
 Qed.
 (** [] *)
 
@@ -1698,15 +1736,52 @@ Qed.
     definition is correct, prove the lemma [eqb_list_true_iff]. *)
 
 Fixpoint eqb_list {A : Type} (eqb : A -> A -> bool)
-                  (l1 l2 : list A) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+                  (l1 l2 : list A) : bool :=
+  match l1, l2 with
+  | nil, nil => true
+  | nil, e2 :: l2' => false
+  | e1 :: l1', nil => false
+  | e1 :: l1', e2 :: l2' => (eqb e1 e2) && (eqb_list eqb l1' l2')
+  end.
 
 Lemma eqb_list_true_iff :
   forall A (eqb : A -> A -> bool),
     (forall a1 a2, eqb a1 a2 = true <-> a1 = a2) ->
     forall l1 l2, eqb_list eqb l1 l2 = true <-> l1 = l2.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros A eqb Heqb.
+  induction l1 as [|e1 l1' IHl1'].
+  - destruct l2.
+    + simpl. split. reflexivity. reflexivity.
+    + split.
+      -- intros H. simpl in H. discriminate H.
+      -- intros H. discriminate H.
+  - destruct l2 as [|e2 l2'].
+    + simpl. split. congruence. congruence.
+    + simpl.
+      split.
+      -- intros H.
+         pose proof (andb_true_iff (eqb e1 e2) (eqb_list eqb l1' l2')) as Hplus.
+         apply Hplus in H.
+         destruct H as [H_e1_eq_e2 H_eqb_l1'_l2'].
+         apply (Heqb e1 e2) in H_e1_eq_e2.
+         rewrite -> H_e1_eq_e2.
+         apply (IHl1' l2') in H_eqb_l1'_l2'.
+         rewrite -> H_eqb_l1'_l2'.
+         reflexivity.
+      -- intros H.
+         inversion H.
+         pose proof (Heqb e2 e2) as Heqbe2e2_is_true.
+         rewrite -> H1 in H1.
+         apply Heqbe2e2_is_true in H1.
+         rewrite -> H1.
+         pose proof (IHl1' l2') as IHl1'l2'.
+         rewrite -> H2 in IHl1'l2'.
+         rewrite -> H2 in H2.
+         apply IHl1'l2' in H2.
+         rewrite -> H2.
+         reflexivity.
+Qed. (* Admitted!!! don't forget me *)
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, recommended (All_forallb)  

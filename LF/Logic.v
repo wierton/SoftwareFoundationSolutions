@@ -1388,6 +1388,17 @@ Definition tr_rev {X} (l : list X) : list X :=
     performed (i.e., we don't have to execute [++] after the recursive
     call); a decent compiler will generate very efficient code in this
     case.  Prove that the two definitions are indeed equivalent. *)
+Lemma rev_append_to_app: forall (X:Type) (l1 l2 l3:list X),
+  @rev_append X l1 (l2++l3) = (@rev_append X l1 l2) ++ l3.
+Proof.
+  induction l1 as [|e1 l1' IHl1'].
+  - simpl.
+    reflexivity.
+  - simpl.
+    intros l2 l3.
+    rewrite <- (IHl1' (e1 :: l2) l3).
+    reflexivity.
+Qed.
 
 Lemma tr_rev_correct : forall X, @tr_rev X = @rev X.
 Proof.
@@ -1399,6 +1410,12 @@ Proof.
   - simpl.
     unfold tr_rev.
     simpl.
+    assert (H: forall X (l:list X), [] ++ l = l).
+    { reflexivity. }
+    rewrite <- (H X [e]).
+    rewrite -> rev_append_to_app.
+    simpl.
+    rewrite <- IHl'.
     reflexivity.
 Qed.
 (** [] *)

@@ -2010,7 +2010,19 @@ Theorem not_exists_dist :
   excluded_middle ->
   forall (X:Type) (P : X -> Prop),
     ~ (exists x, ~ P x) -> (forall x, P x).
-Proof. Admitted.
+Proof.
+  unfold excluded_middle.
+  unfold "~".
+  intros H X P He.
+  pose proof (H (exists x:X, P x -> False)) as Hpp.
+  intros x.
+  pose proof (H (P x)) as Htt.
+  destruct Htt as [HHt | HHf].
+  - exact HHt.
+  - destruct He.
+    exists x.
+    exact HHf.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, standard, optional (classical_axioms)  

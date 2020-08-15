@@ -2005,6 +2005,20 @@ Qed. (* quote: https://stackoverflow.com/questions/32812834/how-to-prove-exclude
     equivalence. Interestingly, the other direction cannot be proved
     in constructive logic. Your job is to show that it is implied by
     the excluded middle. *)
+Theorem not_exists_dist' :
+    excluded_middle ->
+      forall (X:Type) (P : X -> Prop),
+          ~ (exists x, ~ P x) -> (forall x, P x).
+Proof.
+  unfold excluded_middle.
+  intros.
+  destruct (H (P x)).
+  apply H1.
+  exfalso.
+  apply H0.
+  exists x.
+  apply H1.
+Qed.
 
 Theorem not_exists_dist :
   excluded_middle ->
@@ -2048,6 +2062,71 @@ Definition de_morgan_not_and_not := forall P Q:Prop,
 
 Definition implies_to_or := forall P Q:Prop,
   (P->Q) -> (~P\/Q).
+
+Theorem excluded_middle_and_peirce:
+  excluded_middle <-> peirce.
+Proof.
+  unfold excluded_middle.
+  unfold peirce.
+  unfold "~".
+  split.
+  - intros H P Q H0.
+    apply H0.
+    intros H1.
+    pose proof (H P) as H2.
+    pose proof (H Q) as H3.
+    destruct H3 as [H4 | H5].
+    + apply H4.
+    +
+  Show.
+Abort.
+
+Theorem peirce_and_double_negation_elimination:
+  peirce <-> double_negation_elimination.
+Proof.
+  unfold peirce.
+  unfold double_negation_elimination.
+  unfold "~".
+  split.
+  - intros H P H1.
+    pose proof (H P False) as H2.
+    apply H2.
+    intros H3.
+    pose proof (H1 H3) as H4.
+    destruct H4.
+  - intros H P Q H1.
+    pose proof (H P) as H2.
+    apply H2.
+    intros H3.
+    apply H3.
+    apply H1.
+    pose proof (H Q) as H4.
+    intros H5.
+    apply H4.
+    pose proof (H3 H5) as H6.
+    destruct H6.
+Qed.
+
+Theorem double_negation_elimination_and_de_morgan_not_and_not:
+  double_negation_elimination <-> de_morgan_not_and_not.
+Proof.
+  unfold double_negation_elimination.
+  unfold de_morgan_not_and_not.
+  unfold "~".
+  split.
+  - intros H P Q.
+    intros H0.
+    pose proof (H P) as H1.
+    pose proof (H Q) as H2.
+    left.
+    apply H1.
+    intros H3.
+    apply H0.
+    split.
+    + exact H3.
+    + 
+  Show.
+Abort.
 
 (* FILL IN HERE 
 
